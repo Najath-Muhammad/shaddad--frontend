@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
-import { User, UserRole } from '../types/auth.types.js';
-import { tokenManager } from '../api/client.js';
+import { User, UserRole } from '../types/auth.types';
+import { tokenManager } from '../api/client';
 
 const ACCESS_KEY = 'shaddad_mobile_access_token';
 const REFRESH_KEY = 'shaddad_mobile_refresh_token';

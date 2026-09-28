@@ -6,7 +6,7 @@ import {
   StyleSheet,
   ViewStyle,
 } from 'react-native';
-import { colors } from '../../theme/colors.js';
+import { colors } from '../../theme/colors';
 
 interface FormContainerProps {
   children: React.ReactNode;

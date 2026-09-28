@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors } from '../../theme/colors.js';
-import { Button } from '../../components/common/Button.js';
-import { Card } from '../../components/common/Card.js';
+import { colors } from '../../theme/colors';
+import { Button } from '../../components/common/Button';
+import { Card } from '../../components/common/Card';
 
 interface RoleSelectionScreenProps {
   onSelectCustomer: () => void;

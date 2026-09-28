@@ -1,5 +1,5 @@
-import { apiClient } from './client.js';
-import { ApiResponse, AuthResponse, User } from '../types/auth.types.js';
+import { apiClient } from './client';
+import { ApiResponse, AuthResponse, User } from '../types/auth.types';
 
 export interface RegisterCustomerPayload {
   fullName: string;

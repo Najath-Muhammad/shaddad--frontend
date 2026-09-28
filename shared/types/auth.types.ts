@@ -1,10 +1,38 @@
 export type UserRole = 'CUSTOMER' | 'DRIVER' | 'ADMIN';
 
 export type DriverVerificationStatus =
-  | 'PENDING'
+  | 'PENDING_VERIFICATION'
   | 'APPROVED'
   | 'REJECTED'
   | 'SUSPENDED';
+
+export type DriverAvailability = 'OFFLINE' | 'ONLINE' | 'BUSY';
+
+export type VehicleType = 
+  | 'DYNA'
+  | 'PICKUP_SMALL'
+  | 'PICKUP_LARGE'
+  | 'TRAILER'
+  | 'FLATBED'
+  | 'REFRIGERATED'
+  | 'BOX_TRUCK';
+
+export interface Vehicle {
+  id: string;
+  vehicleType: VehicleType;
+  make: string;
+  model: string;
+  year: number;
+  plateNumber: string;
+  color: string;
+  maxWeightKg: number;
+  maxLengthCm: number | null;
+  isRefrigerated: boolean;
+  isVerified: boolean;
+  registrationUrl: string | null;
+  insuranceUrl: string | null;
+  vehiclePhotoUrl: string | null;
+}
 
 export interface CustomerProfile {
   id: string;
@@ -18,9 +46,16 @@ export interface DriverProfile {
   nationalIdNumber: string | null;
   licenseNumber: string | null;
   verificationStatus: DriverVerificationStatus;
-  isOnline: boolean;
+  availability: DriverAvailability;
   rating: number;
   walletBalance: string;
+  nationalIdFrontUrl?: string | null;
+  nationalIdBackUrl?: string | null;
+  licenseUrl?: string | null;
+  profilePhotoUrl?: string | null;
+  rejectionReason?: string | null;
+  suspensionReason?: string | null;
+  vehicle?: Vehicle | null;
 }
 
 export interface User {

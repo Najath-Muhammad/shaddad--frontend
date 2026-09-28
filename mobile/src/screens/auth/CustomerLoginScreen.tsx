@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { colors } from '../../theme/colors.js';
-import { FormContainer } from '../../components/common/FormContainer.js';
-import { Input } from '../../components/common/Input.js';
-import { Button } from '../../components/common/Button.js';
-import { ErrorBanner } from '../../components/common/ErrorBanner.js';
-import { useAuth } from '../../hooks/useAuth.js';
+import { colors } from '../../theme/colors';
+import { FormContainer } from '../../components/common/FormContainer';
+import { Input } from '../../components/common/Input';
+import { Button } from '../../components/common/Button';
+import { ErrorBanner } from '../../components/common/ErrorBanner';
+import { useAuth } from '../../hooks/useAuth';
 
 interface CustomerLoginScreenProps {
   onSuccess: () => void;

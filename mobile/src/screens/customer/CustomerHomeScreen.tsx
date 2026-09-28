@@ -1,10 +1,11 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { colors } from '../../theme/colors.js';
-import { Header } from '../../components/layout/Header.js';
-import { Card } from '../../components/common/Card.js';
-import { Button } from '../../components/common/Button.js';
-import { useAuth } from '../../hooks/useAuth.js';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, FlatList, ActivityIndicator } from 'react-native';
+import { colors } from '../../theme/colors';
+import { Header } from '../../components/layout/Header';
+import { Card } from '../../components/common/Card';
+import { Button } from '../../components/common/Button';
+import { useAuth } from '../../hooks/useAuth';
+import { customerDriverApi } from '../../api/driver.api';
 
 interface CustomerHomeScreenProps {
   onLogout: () => void;
@@ -14,6 +15,25 @@ export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
   onLogout,
 }) => {
   const { user, logout } = useAuth();
+  const [nearbyDrivers, setNearbyDrivers] = useState<any[]>([]);
+  const [loadingDrivers, setLoadingDrivers] = useState(true);
+
+  const fetchNearbyDrivers = async () => {
+    setLoadingDrivers(true);
+    try {
+      // Hardcoding Riyadh coordinates for simulation
+      const response = await customerDriverApi.getNearbyDrivers(24.7136, 46.6753, 50);
+      setNearbyDrivers(response.data || []);
+    } catch (error) {
+      console.error('Failed to fetch nearby drivers:', error);
+    } finally {
+      setLoadingDrivers(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNearbyDrivers();
+  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -67,18 +87,47 @@ export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
           </Text>
         </Card>
 
-        {/* Action Preview */}
-        <Card>
-          <Text style={styles.sectionTitle}>Cargo Transport Services</Text>
-          <Text style={styles.sectionSubtitle}>
-            Available in upcoming Phase 4 & Phase 5:
-          </Text>
-          <View style={styles.featureList}>
-            <Text style={styles.featureItem}>• Dyna (3-4 Ton) On-demand dispatch</Text>
-            <Text style={styles.featureItem}>• Pickup (1-2 Ton) local delivery</Text>
-            <Text style={styles.featureItem}>• Heavy Freight & Flatbeds across KSA</Text>
-            <Text style={styles.featureItem}>• Real-time driver GPS tracking</Text>
+        {/* Nearby Drivers */}
+        <Card style={styles.driversCard}>
+          <View style={styles.driversHeader}>
+            <Text style={styles.sectionTitle}>Nearby Drivers</Text>
+            <Button
+              title="Refresh"
+              onPress={fetchNearbyDrivers}
+              variant="outline"
+              style={styles.refreshButton}
+              textStyle={styles.refreshText}
+            />
           </View>
+          
+          {loadingDrivers ? (
+            <ActivityIndicator size="small" color={colors.primary} style={styles.loader} />
+          ) : nearbyDrivers.length === 0 ? (
+            <Text style={styles.noDriversText}>No drivers found nearby.</Text>
+          ) : (
+            <FlatList
+              data={nearbyDrivers}
+              keyExtractor={(item, index) => index.toString()}
+              scrollEnabled={false}
+              renderItem={({ item }) => (
+                <View style={styles.driverItem}>
+                  <View style={styles.driverAvatar}>
+                    <Text style={styles.driverAvatarText}>
+                      {item.fullName?.charAt(0).toUpperCase() || 'D'}
+                    </Text>
+                  </View>
+                  <View style={styles.driverInfo}>
+                    <Text style={styles.driverName}>{item.fullName || 'Driver'}</Text>
+                    {item.driverProfile?.vehicle && (
+                      <Text style={styles.driverVehicle}>
+                        {item.driverProfile.vehicle.make} {item.driverProfile.vehicle.model}
+                      </Text>
+                    )}
+                  </View>
+                </View>
+              )}
+            />
+          )}
         </Card>
       </ScrollView>
     </View>
@@ -171,18 +220,64 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
     color: colors.text,
-    marginBottom: 4,
   },
-  sectionSubtitle: {
+  driversCard: {
+    padding: 16,
+  },
+  driversHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  refreshButton: {
+    height: 30,
+    paddingHorizontal: 12,
+  },
+  refreshText: {
     fontSize: 12,
+  },
+  loader: {
+    marginVertical: 20,
+  },
+  noDriversText: {
+    fontSize: 14,
     color: colors.textMuted,
-    marginBottom: 12,
+    textAlign: 'center',
+    marginVertical: 20,
   },
-  featureList: {
-    gap: 6,
+  driverItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
-  featureItem: {
-    fontSize: 13,
+  driverAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  driverAvatarText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.secondary,
+  },
+  driverInfo: {
+    flex: 1,
+  },
+  driverName: {
+    fontSize: 16,
+    fontWeight: '600',
     color: colors.text,
+  },
+  driverVehicle: {
+    fontSize: 13,
+    color: colors.textMuted,
+    marginTop: 2,
   },
 });

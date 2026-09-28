@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors } from '../../theme/colors.js';
-import { useAuth } from '../../hooks/useAuth.js';
+import { colors } from '../../theme/colors';
+import { useAuth } from '../../hooks/useAuth';
 
 interface SplashScreenProps {
   onFinish: (destination: 'role-select' | 'customer-home' | 'driver-home') => void;

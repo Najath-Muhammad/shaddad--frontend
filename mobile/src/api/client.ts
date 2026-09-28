@@ -1,11 +1,13 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { Platform } from 'react-native';
 
-// Android emulator uses 10.0.2.2, iOS simulator uses localhost
+// For physical devices, use your PC's local network IP
+// Android emulator: 10.0.2.2 | iOS simulator: localhost | Physical device: LAN IP
+const LOCAL_IP = '192.168.220.41';
 const DEFAULT_URL = Platform.select({
-  android: 'http://10.0.2.2:5000/api/v1',
-  ios: 'http://localhost:5000/api/v1',
-  default: 'http://localhost:5000/api/v1',
+  android: __DEV__ ? `http://${LOCAL_IP}:5000/api/v1` : 'https://your-production-api.com/api/v1',
+  ios: __DEV__ ? `http://${LOCAL_IP}:5000/api/v1` : 'https://your-production-api.com/api/v1',
+  default: `http://${LOCAL_IP}:5000/api/v1`,
 });
 
 let currentAccessToken: string | null = null;

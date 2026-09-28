@@ -1,11 +1,11 @@
 import { useState, useCallback } from 'react';
-import { useAuthStore } from '../store/authStore.js';
+import { useAuthStore } from '../store/authStore';
 import {
   authApi,
   LoginPayload,
   RegisterCustomerPayload,
   RegisterDriverPayload,
-} from '../api/auth.api.js';
+} from '../api/auth.api';
 
 export const useAuth = () => {
   const {

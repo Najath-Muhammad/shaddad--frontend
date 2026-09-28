@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, SafeAreaView, StatusBar } from 'react-native';
-import { colors } from '../theme/colors.js';
-import { useAuthStore } from '../store/authStore.js';
-import { SplashScreen } from '../screens/splash/SplashScreen.js';
-import { RoleSelectionScreen } from '../screens/auth/RoleSelectionScreen.js';
-import { CustomerLoginScreen } from '../screens/auth/CustomerLoginScreen.js';
-import { CustomerRegisterScreen } from '../screens/auth/CustomerRegisterScreen.js';
-import { DriverLoginScreen } from '../screens/auth/DriverLoginScreen.js';
-import { DriverRegisterScreen } from '../screens/auth/DriverRegisterScreen.js';
-import { CustomerHomeScreen } from '../screens/customer/CustomerHomeScreen.js';
-import { DriverHomeScreen } from '../screens/driver/DriverHomeScreen.js';
+import { colors } from '../theme/colors';
+import { useAuthStore } from '../store/authStore';
+import { SplashScreen } from '../screens/splash/SplashScreen';
+import { RoleSelectionScreen } from '../screens/auth/RoleSelectionScreen';
+import { CustomerLoginScreen } from '../screens/auth/CustomerLoginScreen';
+import { CustomerRegisterScreen } from '../screens/auth/CustomerRegisterScreen';
+import { DriverLoginScreen } from '../screens/auth/DriverLoginScreen';
+import { DriverRegisterScreen } from '../screens/auth/DriverRegisterScreen';
+import { CustomerHomeScreen } from '../screens/customer/CustomerHomeScreen';
+import { DriverHomeScreen } from '../screens/driver/DriverHomeScreen';
+import { VehicleDetailsScreen } from '../screens/driver/VehicleDetailsScreen';
+import { DocumentUploadScreen } from '../screens/driver/DocumentUploadScreen';
 
 type ScreenState =
   | 'splash'
@@ -19,7 +21,9 @@ type ScreenState =
   | 'driver-login'
   | 'driver-register'
   | 'customer-home'
-  | 'driver-home';
+  | 'driver-home'
+  | 'vehicle-details'
+  | 'document-upload';
 
 export const RootNavigator: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<ScreenState>('splash');
@@ -99,7 +103,17 @@ export const RootNavigator: React.FC = () => {
         {currentScreen === 'driver-home' && (
           <DriverHomeScreen
             onLogout={() => setCurrentScreen('role-select')}
+            onNavigateVehicleDetails={() => setCurrentScreen('vehicle-details')}
+            onNavigateDocumentUpload={() => setCurrentScreen('document-upload')}
           />
+        )}
+
+        {currentScreen === 'vehicle-details' && (
+          <VehicleDetailsScreen onBack={() => setCurrentScreen('driver-home')} />
+        )}
+
+        {currentScreen === 'document-upload' && (
+          <DocumentUploadScreen onBack={() => setCurrentScreen('driver-home')} />
         )}
       </View>
     </SafeAreaView>

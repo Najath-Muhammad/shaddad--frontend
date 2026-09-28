@@ -1,11 +1,46 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { AdminHeader } from '../components/layout/AdminHeader.js';
 import { MetricCard } from '../components/common/MetricCard.js';
 import { useAdminAuth } from '../hooks/useAdminAuth.js';
 import { Users, Truck, CheckCircle2, ShieldCheck, Activity } from 'lucide-react';
+import { adminDriverApi } from '../api/adminDriver.api.js';
+import { User } from '../../shared/types/auth.types.js';
+import { DriverDossierModal } from '../components/driver/DriverDossierModal.js';
 
 export const AdminDashboard: React.FC = () => {
   const { user } = useAdminAuth();
+  const [pendingDrivers, setPendingDrivers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedDriver, setSelectedDriver] = useState<User | null>(null);
+
+  const fetchPendingDrivers = async () => {
+    try {
+      setLoading(true);
+      const res = await adminDriverApi.getPendingDrivers();
+      if (res.success && res.data) {
+        setPendingDrivers(res.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch pending drivers', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPendingDrivers();
+  }, []);
+
+  const handleVerifyAction = async (driverProfileId: string, decision: 'APPROVED' | 'REJECTED' | 'SUSPENDED', reason?: string) => {
+    try {
+      await adminDriverApi.verifyDriver(driverProfileId, decision, reason);
+      setSelectedDriver(null);
+      fetchPendingDrivers();
+    } catch (error) {
+      console.error('Failed to verify driver', error);
+      alert('Action failed. Please try again.');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-neutral-50 flex flex-col">
@@ -71,26 +106,79 @@ export const AdminDashboard: React.FC = () => {
           />
         </div>
 
-        {/* Phase Details Card */}
-        <div className="bg-white border border-neutral-200 rounded-xl p-6 shadow-sm">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-neutral-900 mb-3">
-            Phase 1 Foundation Status
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-            <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-200">
-              <p className="font-bold text-neutral-900 mb-1">🔐 Auth Engine</p>
-              <p className="text-neutral-600">Access Token (15m) + Refresh Token rotation (7d) with DB hashing and revoke mechanism.</p>
-            </div>
-            <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-200">
-              <p className="font-bold text-neutral-900 mb-1">🛡️ Role Guards</p>
-              <p className="text-neutral-600">Role-based authorization middleware protecting Customer, Driver, and Admin endpoints.</p>
-            </div>
-            <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-200">
-              <p className="font-bold text-neutral-900 mb-1">📐 Layered Architecture</p>
-              <p className="text-neutral-600">Controllers → Services (IServices) → Repositories (IRepositories) with clean Dependency Injection.</p>
-            </div>
+        {/* Pending Drivers Verification Table */}
+        <div className="bg-white border border-neutral-200 rounded-xl shadow-sm overflow-hidden flex flex-col min-h-[400px]">
+          <div className="px-6 py-4 border-b border-neutral-200 flex justify-between items-center bg-neutral-50">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-neutral-900">
+              Pending Driver Verifications
+            </h3>
+            <button onClick={fetchPendingDrivers} disabled={loading} className="text-xs font-semibold text-blue-600 hover:text-blue-800 uppercase">
+              {loading ? 'Refreshing...' : 'Refresh'}
+            </button>
+          </div>
+          
+          <div className="flex-1 overflow-x-auto">
+            <table className="w-full text-left text-sm text-neutral-600">
+              <thead className="bg-white border-b border-neutral-200 text-xs uppercase text-neutral-500 font-semibold">
+                <tr>
+                  <th className="px-6 py-3">Driver</th>
+                  <th className="px-6 py-3">Contact</th>
+                  <th className="px-6 py-3">Status</th>
+                  <th className="px-6 py-3">Vehicle</th>
+                  <th className="px-6 py-3 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-neutral-100">
+                {pendingDrivers.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-12 text-center text-neutral-400">
+                      No pending drivers found.
+                    </td>
+                  </tr>
+                ) : (
+                  pendingDrivers.map((driver) => (
+                    <tr key={driver.id} className="hover:bg-neutral-50 transition-colors">
+                      <td className="px-6 py-4">
+                        <p className="font-semibold text-neutral-900">{driver.fullName}</p>
+                        <p className="text-xs text-neutral-500 font-mono">ID: {driver.driverProfile?.nationalIdNumber || 'N/A'}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p>{driver.phoneNumber}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                          {driver.driverProfile?.verificationStatus.replace('_', ' ')}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        {driver.driverProfile?.vehicle ? (
+                          <span className="text-neutral-900">{driver.driverProfile.vehicle.vehicleType}</span>
+                        ) : (
+                          <span className="text-neutral-400 italic">None</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button
+                          onClick={() => setSelectedDriver(driver)}
+                          className="px-3 py-1.5 text-xs font-semibold text-white bg-black rounded hover:bg-neutral-800 transition-colors"
+                        >
+                          Review Dossier
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
+
+        <DriverDossierModal
+          driver={selectedDriver}
+          isOpen={!!selectedDriver}
+          onClose={() => setSelectedDriver(null)}
+          onAction={handleVerifyAction}
+        />
       </main>
     </div>
   );

@@ -1,19 +1,26 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { colors } from '../../theme/colors.js';
-import { Header } from '../../components/layout/Header.js';
-import { Card } from '../../components/common/Card.js';
-import { Button } from '../../components/common/Button.js';
-import { useAuth } from '../../hooks/useAuth.js';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, Switch, Alert } from 'react-native';
+import { colors } from '../../theme/colors';
+import { Header } from '../../components/layout/Header';
+import { Card } from '../../components/common/Card';
+import { Button } from '../../components/common/Button';
+import { useAuth } from '../../hooks/useAuth';
+import { driverApi } from '../../api/driver.api';
 
 interface DriverHomeScreenProps {
   onLogout: () => void;
+  onNavigateVehicleDetails: () => void;
+  onNavigateDocumentUpload: () => void;
 }
 
 export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
   onLogout,
+  onNavigateVehicleDetails,
+  onNavigateDocumentUpload,
 }) => {
   const { user, logout } = useAuth();
+  const [isOnline, setIsOnline] = useState(false);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
 
   const handleLogout = async () => {
     await logout();
@@ -22,6 +29,27 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
 
   const verificationStatus =
     user?.driverProfile?.verificationStatus || 'PENDING';
+
+  const handleToggleStatus = async (value: boolean) => {
+    if (value && verificationStatus !== 'APPROVED') {
+      Alert.alert('Action Denied', 'You must be verified to go online.');
+      return;
+    }
+    
+    setUpdatingStatus(true);
+    try {
+      await driverApi.updateAvailability(value ? 'ONLINE' : 'OFFLINE');
+      if (value) {
+        // Mock location update
+        await driverApi.updateLocation(24.7136, 46.6753); // Riyadh coordinates
+      }
+      setIsOnline(value);
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to update availability');
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -106,15 +134,26 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
 
         {/* Driver Capabilities Card */}
         <Card>
-          <Text style={styles.sectionTitle}>Driver Dispatch Engine</Text>
-          <Text style={styles.sectionSubtitle}>
-            Features arriving in Phase 3 & Phase 4:
-          </Text>
-          <View style={styles.featureList}>
-            <Text style={styles.featureItem}>• Document upload wizard (Iqama, Istimara, Insurance)</Text>
-            <Text style={styles.featureItem}>• Vehicle registration (Dyna, Pickup, Trailer)</Text>
-            <Text style={styles.featureItem}>• Online / Offline GPS status toggle</Text>
-            <Text style={styles.featureItem}>• Real-time trip request alerts & dispatch</Text>
+          <Text style={styles.sectionTitle}>Driver Actions</Text>
+          <View style={styles.actionButtonsRow}>
+            <Button
+              title="Vehicle Details"
+              onPress={onNavigateVehicleDetails}
+              style={styles.actionButton}
+            />
+            <Button
+              title="Upload Documents"
+              onPress={onNavigateDocumentUpload}
+              style={styles.actionButton}
+            />
+          </View>
+          <View style={styles.toggleRow}>
+            <Text style={styles.toggleText}>Driver Status: {isOnline ? 'Online' : 'Offline'}</Text>
+            <Switch
+              value={isOnline}
+              onValueChange={handleToggleStatus}
+              disabled={updatingStatus}
+            />
           </View>
         </Card>
       </ScrollView>
@@ -264,18 +303,27 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
     color: colors.text,
-    marginBottom: 4,
-  },
-  sectionSubtitle: {
-    fontSize: 12,
-    color: colors.textMuted,
     marginBottom: 12,
   },
-  featureList: {
-    gap: 6,
+  actionButtonsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
   },
-  featureItem: {
-    fontSize: 13,
+  actionButton: {
+    flex: 1,
+  },
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  toggleText: {
+    fontSize: 14,
+    fontWeight: '600',
     color: colors.text,
   },
 });
