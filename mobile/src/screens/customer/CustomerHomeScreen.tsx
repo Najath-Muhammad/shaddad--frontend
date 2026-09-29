@@ -6,6 +6,8 @@ import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { useAuth } from '../../hooks/useAuth';
 import { customerDriverApi } from '../../api/driver.api';
+import { tripApi } from '../../api/trip.api';
+import { ActiveTripCard } from '../../components/trip/ActiveTripCard';
 interface CustomerHomeScreenProps {
   onLogout: () => void;
   onNavigateCreateTrip: (driverId: string, vehicleType: string) => void;
@@ -18,6 +20,20 @@ export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
   const { user, logout } = useAuth();
   const [nearbyDrivers, setNearbyDrivers] = useState<any[]>([]);
   const [loadingDrivers, setLoadingDrivers] = useState(true);
+  const [activeTrip, setActiveTrip] = useState<any>(null);
+
+  const fetchActiveTrip = async () => {
+    try {
+      const response = await tripApi.getCustomerTrips();
+      if (response.data?.data) {
+        // Find the first accepted trip
+        const acceptedTrip = response.data.data.find((t: any) => t.status === 'ACCEPTED');
+        setActiveTrip(acceptedTrip || null);
+      }
+    } catch (error) {
+      console.error('Failed to fetch customer trips:', error);
+    }
+  };
 
   const fetchNearbyDrivers = async () => {
     setLoadingDrivers(true);
@@ -34,6 +50,11 @@ export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
 
   useEffect(() => {
     fetchNearbyDrivers();
+    fetchActiveTrip();
+    
+    // Poll for active trips every 10 seconds
+    const intervalId = setInterval(fetchActiveTrip, 10000);
+    return () => clearInterval(intervalId);
   }, []);
 
   const handleLogout = async () => {
@@ -58,6 +79,9 @@ export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
       />
 
       <ScrollView contentContainerStyle={styles.content}>
+        {/* Active Trip Section */}
+        {activeTrip && <ActiveTripCard trip={activeTrip} role="CUSTOMER" />}
+
         {/* User Card */}
         <Card style={styles.profileCard}>
           <View style={styles.avatarRow}>
@@ -119,17 +143,17 @@ export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
                   </View>
                   <View style={styles.driverInfo}>
                     <Text style={styles.driverName}>{item.fullName || 'Driver'}</Text>
-                    {item.driverProfile?.vehicle && (
+                    {item.vehicle && (
                       <Text style={styles.driverVehicle}>
-                        {item.driverProfile.vehicle.make} {item.driverProfile.vehicle.model}
+                        {item.vehicle.make} {item.vehicle.model}
                       </Text>
                     )}
                   </View>
                   <Button 
                     title="Request" 
                     onPress={() => onNavigateCreateTrip(
-                      item.driverProfile?.id, 
-                      item.driverProfile?.vehicle?.vehicleType || 'DYNA' 
+                      item.id, 
+                      item.vehicle?.vehicleType || 'DYNA' 
                     )} 
                   />
                 </View>

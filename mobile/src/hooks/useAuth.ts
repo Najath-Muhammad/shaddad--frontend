@@ -33,7 +33,9 @@ export const useAuth = () => {
         await setAuth(loggedInUser, tokens.accessToken, tokens.refreshToken);
         return loggedInUser;
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Login failed';
+        const message =
+          (err as any)?.response?.data?.error?.message ||
+          (err instanceof Error ? err.message : 'Login failed');
         setError(message);
         throw err;
       } finally {
@@ -52,7 +54,9 @@ export const useAuth = () => {
         await setAuth(registeredUser, tokens.accessToken, tokens.refreshToken);
         return registeredUser;
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Registration failed';
+        const message =
+          (err as any)?.response?.data?.error?.message ||
+          (err instanceof Error ? err.message : 'Registration failed');
         setError(message);
         throw err;
       } finally {
@@ -71,7 +75,9 @@ export const useAuth = () => {
         await setAuth(registeredUser, tokens.accessToken, tokens.refreshToken);
         return registeredUser;
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Driver registration failed';
+        const message =
+          (err as any)?.response?.data?.error?.message ||
+          (err instanceof Error ? err.message : 'Driver registration failed');
         setError(message);
         throw err;
       } finally {

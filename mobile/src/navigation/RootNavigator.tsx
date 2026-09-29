@@ -15,6 +15,8 @@ import { DocumentUploadScreen } from '../screens/driver/DocumentUploadScreen';
 import { CreateTripScreen } from '../screens/customer/CreateTripScreen';
 import { TripReviewScreen } from '../screens/customer/TripReviewScreen';
 import { WaitingForDriverScreen } from '../screens/customer/WaitingForDriverScreen';
+import { ActiveTripCustomerScreen } from '../screens/trip/ActiveTripCustomerScreen';
+import { ActiveTripDriverScreen } from '../screens/trip/ActiveTripDriverScreen';
 
 type ScreenState =
   | 'splash'
@@ -29,7 +31,9 @@ type ScreenState =
   | 'document-upload'
   | 'create-trip'
   | 'trip-review'
-  | 'waiting-driver';
+  | 'waiting-driver'
+  | 'active-trip-customer'
+  | 'active-trip-driver';
 
 export const RootNavigator: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<ScreenState>('splash');
@@ -142,7 +146,21 @@ export const RootNavigator: React.FC = () => {
         {currentScreen === 'waiting-driver' && (
           <WaitingForDriverScreen
             tripId={tripState.tripId!}
-            onFinish={() => setCurrentScreen('customer-home')}
+            onFinish={() => setCurrentScreen('active-trip-customer')}
+          />
+        )}
+
+        {currentScreen === 'active-trip-customer' && (
+          <ActiveTripCustomerScreen
+            tripId={tripState.tripId!}
+            onTripCompleted={() => setCurrentScreen('customer-home')}
+          />
+        )}
+
+        {currentScreen === 'active-trip-driver' && (
+          <ActiveTripDriverScreen
+            tripId={tripState.tripId!}
+            onTripCompleted={() => setCurrentScreen('driver-home')}
           />
         )}
 
@@ -151,6 +169,10 @@ export const RootNavigator: React.FC = () => {
             onLogout={() => setCurrentScreen('role-select')}
             onNavigateVehicleDetails={() => setCurrentScreen('vehicle-details')}
             onNavigateDocumentUpload={() => setCurrentScreen('document-upload')}
+            onNavigateActiveTrip={(tripId) => {
+              setTripState({ tripId });
+              setCurrentScreen('active-trip-driver');
+            }}
           />
         )}
 

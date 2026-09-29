@@ -48,7 +48,12 @@ export const CreateTripScreen: React.FC<Props> = ({ driverId, vehicleType, onCal
         pricing: breakdown
       });
     } catch (error: any) {
-      Alert.alert('Error', error.response?.data?.error?.message || 'Failed to calculate price');
+      const errData = error.response?.data?.error;
+      let msg = errData?.message || 'Failed to calculate price';
+      if (errData?.details && Array.isArray(errData.details)) {
+        msg += ':\n' + errData.details.map((d: any) => `- ${d.field}: ${d.message}`).join('\n');
+      }
+      Alert.alert('Error', msg);
     } finally {
       setLoading(false);
     }

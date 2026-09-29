@@ -19,11 +19,13 @@ import { useAuth } from '../../hooks/useAuth';
 import { driverApi, DriverProfile } from '../../api/driver.api';
 import { tripApi } from '../../api/trip.api';
 import { IncomingRequestModal } from './IncomingRequestModal';
+import { ActiveTripCard } from '../../components/trip/ActiveTripCard';
 
 interface DriverHomeScreenProps {
   onLogout: () => void;
   onNavigateVehicleDetails: () => void;
   onNavigateDocumentUpload: () => void;
+  onNavigateActiveTrip: (tripId: string) => void;
 }
 
 // ─── Status banner config ────────────────────────────────────────────────────
@@ -82,6 +84,7 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
   onLogout,
   onNavigateVehicleDetails,
   onNavigateDocumentUpload,
+  onNavigateActiveTrip,
 }) => {
   const { user, logout } = useAuth();
 
@@ -90,18 +93,27 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
   const [isOnline, setIsOnline] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [incomingTrip, setIncomingTrip] = useState<any>(null);
+  const [activeTrip, setActiveTrip] = useState<any>(null);
 
-  // Poll for incoming trips when online
+  // Poll for trips when online
   useEffect(() => {
     let interval: any;
     if (isOnline) {
       interval = setInterval(async () => {
         try {
-          const res = await tripApi.getIncomingRequests();
-          if (res.data?.data?.length > 0) {
-            setIncomingTrip(res.data.data[0]);
+          // Poll incoming
+          const incRes = await tripApi.getIncomingRequests();
+          if (incRes.data?.data?.length > 0) {
+            setIncomingTrip(incRes.data.data[0]);
           } else {
             setIncomingTrip(null);
+          }
+
+          // Poll active trips
+          const activeRes = await tripApi.getDriverTrips();
+          if (activeRes.data?.data) {
+            const acceptedTrip = activeRes.data.data.find((t: any) => t.status === 'ACCEPTED');
+            setActiveTrip(acceptedTrip || null);
           }
         } catch (error) {
           console.error(error);
@@ -109,6 +121,7 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
       }, 5000);
     } else {
       setIncomingTrip(null);
+      setActiveTrip(null);
     }
     return () => clearInterval(interval);
   }, [isOnline]);
@@ -330,6 +343,8 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
   // ─── APPROVED view ────────────────────────────────────────────────────────
   const ApprovedView = () => (
     <ScrollView contentContainerStyle={styles.content}>
+      {activeTrip && <ActiveTripCard trip={activeTrip} role="DRIVER" />}
+
       <ProfileCard />
       <StatusBanner />
 
@@ -427,8 +442,10 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
         trip={incomingTrip} 
         visible={!!incomingTrip} 
         onRespond={(accepted) => {
+          if (accepted) {
+            onNavigateActiveTrip(incomingTrip.id);
+          }
           setIncomingTrip(null);
-          if (accepted) Alert.alert('Success', 'Trip Accepted!');
         }} 
       />
     </View>

@@ -1,0 +1,55 @@
+import { io, Socket } from 'socket.io-client';
+import { tokenManager } from './client';
+import { Platform } from 'react-native';
+
+const LOCAL_IP = '192.168.220.41';
+const SOCKET_URL = Platform.select({
+  android: __DEV__ ? `http://${LOCAL_IP}:5000` : 'https://your-production-api.com',
+  ios: __DEV__ ? `http://${LOCAL_IP}:5000` : 'https://your-production-api.com',
+  default: `http://${LOCAL_IP}:5000`,
+});
+
+class SocketClient {
+  private socket: Socket | null = null;
+
+  connect() {
+    if (this.socket?.connected) return;
+
+    const token = tokenManager.getAccessToken();
+    if (!token) return;
+
+    this.socket = io(SOCKET_URL, {
+      auth: { token },
+      transports: ['websocket'],
+    });
+
+    this.socket.on('connect', () => console.log('Socket connected:', this.socket?.id));
+    this.socket.on('disconnect', () => console.log('Socket disconnected'));
+  }
+
+  disconnect() {
+    if (this.socket) {
+      this.socket.disconnect();
+      this.socket = null;
+    }
+  }
+
+  joinTrip(tripId: string) {
+    if (!this.socket?.connected) this.connect();
+    this.socket?.emit('join_trip', { tripId });
+  }
+
+  sendLocation(tripId: string, lat: number, lng: number) {
+    this.socket?.emit('driver_location_update', { tripId, lat, lng });
+  }
+
+  onLocationUpdate(callback: (data: { lat: number; lng: number; timestamp: string }) => void) {
+    this.socket?.on('driver_location_updated', callback);
+  }
+  
+  offLocationUpdate() {
+    this.socket?.off('driver_location_updated');
+  }
+}
+
+export const socketClient = new SocketClient();
