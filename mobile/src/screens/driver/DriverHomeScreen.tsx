@@ -1,11 +1,24 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Switch, Alert } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Switch,
+  Alert,
+  ActivityIndicator,
+  TouchableOpacity,
+  ViewStyle,
+  TextStyle,
+} from 'react-native';
 import { colors } from '../../theme/colors';
 import { Header } from '../../components/layout/Header';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { useAuth } from '../../hooks/useAuth';
-import { driverApi } from '../../api/driver.api';
+import { driverApi, DriverProfile } from '../../api/driver.api';
+import { tripApi } from '../../api/trip.api';
+import { IncomingRequestModal } from './IncomingRequestModal';
 
 interface DriverHomeScreenProps {
   onLogout: () => void;
@@ -13,174 +26,467 @@ interface DriverHomeScreenProps {
   onNavigateDocumentUpload: () => void;
 }
 
+// ─── Status banner config ────────────────────────────────────────────────────
+
+type VerificationStatus = DriverProfile['verificationStatus'];
+
+interface StatusConfig {
+  label: string;
+  description: (reason?: string | null) => string;
+  pillStyle: ViewStyle;
+  pillTextStyle: TextStyle;
+  cardStyle: ViewStyle;
+}
+
+const STATUS_CONFIG: Record<VerificationStatus, StatusConfig> = {
+  PENDING_VERIFICATION: {
+    label: 'PENDING REVIEW',
+    description: () =>
+      'Your account is under review. Complete the steps below to speed up verification.',
+    pillStyle: { backgroundColor: colors.warningBg, borderColor: colors.warning, borderWidth: 1 },
+    pillTextStyle: { color: colors.warning },
+    cardStyle: { borderLeftWidth: 4, borderLeftColor: colors.warning },
+  },
+  APPROVED: {
+    label: 'APPROVED',
+    description: () => 'Your account is verified. You can now go online and accept trips.',
+    pillStyle: { backgroundColor: colors.successBg, borderColor: colors.success, borderWidth: 1 },
+    pillTextStyle: { color: colors.success },
+    cardStyle: { borderLeftWidth: 4, borderLeftColor: colors.success },
+  },
+  REJECTED: {
+    label: 'REJECTED',
+    description: (reason) =>
+      reason
+        ? `Your application was rejected: "${reason}". Please re-upload your documents.`
+        : 'Your application was rejected. Please re-upload your documents and contact support.',
+    pillStyle: { backgroundColor: colors.errorBg, borderColor: colors.error, borderWidth: 1 },
+    pillTextStyle: { color: colors.error },
+    cardStyle: { borderLeftWidth: 4, borderLeftColor: colors.error },
+  },
+  SUSPENDED: {
+    label: 'SUSPENDED',
+    description: (reason) =>
+      reason
+        ? `Your account has been suspended: "${reason}". Please contact support.`
+        : 'Your account has been suspended. Please contact support.',
+    pillStyle: { backgroundColor: '#FFF7ED', borderColor: '#EA580C', borderWidth: 1 },
+    pillTextStyle: { color: '#EA580C' },
+    cardStyle: { borderLeftWidth: 4, borderLeftColor: '#EA580C' },
+  },
+};
+
+// ─── Main component ──────────────────────────────────────────────────────────
+
 export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
   onLogout,
   onNavigateVehicleDetails,
   onNavigateDocumentUpload,
 }) => {
   const { user, logout } = useAuth();
+
+  const [driverProfile, setDriverProfile] = useState<DriverProfile | null>(null);
+  const [loadingProfile, setLoadingProfile] = useState(true);
   const [isOnline, setIsOnline] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [incomingTrip, setIncomingTrip] = useState<any>(null);
 
+  // Poll for incoming trips when online
+  useEffect(() => {
+    let interval: any;
+    if (isOnline) {
+      interval = setInterval(async () => {
+        try {
+          const res = await tripApi.getIncomingRequests();
+          if (res.data?.data?.length > 0) {
+            setIncomingTrip(res.data.data[0]);
+          } else {
+            setIncomingTrip(null);
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      }, 5000);
+    } else {
+      setIncomingTrip(null);
+    }
+    return () => clearInterval(interval);
+  }, [isOnline]);
+
+  // ── Fetch latest driver profile on mount ──────────────────────────────────
+  const fetchProfile = useCallback(async () => {
+    try {
+      setLoadingProfile(true);
+      const res = await driverApi.getDriverProfile();
+      if (res.data) {
+        setDriverProfile(res.data);
+        setIsOnline(res.data.availability === 'ONLINE');
+      }
+    } catch {
+      // fallback: use the auth store value
+      if (user?.driverProfile) {
+        setDriverProfile({
+          id: user.driverProfile.id,
+          verificationStatus:
+            (user.driverProfile.verificationStatus as VerificationStatus) ??
+            'PENDING_VERIFICATION',
+          rejectionReason: null,
+          suspensionReason: null,
+          availability: 'OFFLINE',
+          rating: user.driverProfile.rating ?? 5.0,
+          walletBalance: user.driverProfile.walletBalance ?? '0.00',
+          totalTripsCount: 0,
+          nationalIdFrontUrl: null,
+          nationalIdBackUrl: null,
+          licenseUrl: null,
+          profilePhotoUrl: null,
+          vehicle: null,
+        });
+      }
+    } finally {
+      setLoadingProfile(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    void fetchProfile();
+  }, [fetchProfile]);
+
+  // ── Handlers ──────────────────────────────────────────────────────────────
   const handleLogout = async () => {
     await logout();
     onLogout();
   };
 
-  const verificationStatus =
-    user?.driverProfile?.verificationStatus || 'PENDING';
-
   const handleToggleStatus = async (value: boolean) => {
-    if (value && verificationStatus !== 'APPROVED') {
-      Alert.alert('Action Denied', 'You must be verified to go online.');
-      return;
-    }
-    
     setUpdatingStatus(true);
     try {
       await driverApi.updateAvailability(value ? 'ONLINE' : 'OFFLINE');
       if (value) {
-        // Mock location update
-        await driverApi.updateLocation(24.7136, 46.6753); // Riyadh coordinates
+        await driverApi.updateLocation(24.7136, 46.6753);
       }
       setIsOnline(value);
-    } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to update availability');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to update availability';
+      Alert.alert('Error', message);
     } finally {
       setUpdatingStatus(false);
     }
   };
 
-  return (
-    <View style={styles.container}>
-      <Header
-        title="SHADDAD"
-        subtitle="Driver Mode"
-        rightAction={
-          <Button
-            title="Sign Out"
-            variant="outline"
-            onPress={handleLogout}
-            style={styles.signOutButton}
-            textStyle={styles.signOutText}
-          />
-        }
+  // ── Derived values ────────────────────────────────────────────────────────
+  const verificationStatus: VerificationStatus =
+    driverProfile?.verificationStatus ?? 'PENDING_VERIFICATION';
+  const isApproved = verificationStatus === 'APPROVED';
+  const statusConfig = STATUS_CONFIG[verificationStatus];
+
+  const walletDisplay =
+    driverProfile
+      ? `${parseFloat(String(driverProfile.walletBalance)).toFixed(2)} SAR`
+      : '0.00 SAR';
+  const ratingDisplay = driverProfile ? `${driverProfile.rating.toFixed(1)} ★` : '5.0 ★';
+
+  // ── Onboarding checklist items ────────────────────────────────────────────
+  const hasVehicle = !!driverProfile?.vehicle;
+  const hasNationalId = !!driverProfile?.nationalIdFrontUrl;
+  const hasLicense = !!driverProfile?.licenseUrl;
+  const hasRegistration = !!driverProfile?.vehicle?.registrationUrl;
+  const hasProfilePhoto = !!driverProfile?.profilePhotoUrl;
+  const hasVehiclePhoto = !!driverProfile?.vehicle?.vehiclePhotoUrl;
+  const hasInsurance = !!driverProfile?.vehicle?.insuranceUrl;
+  
+  const allDocsDone = 
+    hasNationalId && 
+    hasLicense && 
+    hasRegistration && 
+    hasProfilePhoto && 
+    hasVehiclePhoto && 
+    hasInsurance;
+
+  // ────────────────────────────────────────────────────────────────────────────
+
+  const ProfileCard = () => (
+    <Card style={styles.profileCard}>
+      <View style={styles.avatarRow}>
+        <View style={styles.avatar}>
+          <Text style={styles.avatarText}>
+            {user?.fullName?.charAt(0).toUpperCase() || 'D'}
+          </Text>
+        </View>
+        <View style={styles.profileText}>
+          <View style={styles.roleBadge}>
+            <Text style={styles.roleBadgeText}>INDEPENDENT DRIVER</Text>
+          </View>
+          <Text style={styles.userName}>{user?.fullName || 'Driver'}</Text>
+          <Text style={styles.userPhone}>{user?.phoneNumber}</Text>
+        </View>
+      </View>
+    </Card>
+  );
+
+  const StatusBanner = () => (
+    <Card style={[styles.statusCard, statusConfig.cardStyle]}>
+      <View style={styles.statusHeader}>
+        <Text style={styles.statusTitle}>Verification Status</Text>
+        <View style={[styles.statusPill, statusConfig.pillStyle]}>
+          <Text style={[styles.statusPillText, statusConfig.pillTextStyle]}>
+            {statusConfig.label}
+          </Text>
+        </View>
+      </View>
+      <Text style={styles.statusDesc}>
+        {verificationStatus === 'PENDING_VERIFICATION' && allDocsDone && hasVehicle
+          ? 'Your application is fully submitted and is currently waiting for admin approval. We will notify you once reviewed.'
+          : statusConfig.description(
+              driverProfile?.rejectionReason ?? driverProfile?.suspensionReason
+            )}
+      </Text>
+    </Card>
+  );
+
+  // ─── PENDING / REJECTED / SUSPENDED view ─────────────────────────────────
+  const PendingView = () => (
+    <ScrollView contentContainerStyle={styles.content}>
+      <ProfileCard />
+      <StatusBanner />
+
+      {/* Onboarding checklist or Under Review State */}
+      <Card>
+        {allDocsDone && hasVehicle ? (
+          <View style={styles.underReviewContainer}>
+            <Text style={styles.underReviewIcon}>⏳</Text>
+            <Text style={styles.underReviewTitle}>Waiting for Admin Approval</Text>
+            <Text style={styles.underReviewDesc}>
+              Thank you for completing your profile! Our admin team is currently reviewing your documents. 
+              You will be notified as soon as your account is approved.
+            </Text>
+            <Button 
+              title="Review Submitted Documents" 
+              variant="outline" 
+              onPress={onNavigateDocumentUpload} 
+              style={{ marginTop: 16, width: '100%' }}
+            />
+          </View>
+        ) : (
+          <>
+            <Text style={styles.sectionTitle}>
+              {verificationStatus === 'REJECTED'
+                ? 'Re-submit Your Documents'
+                : 'Complete Your Profile'}
+            </Text>
+            <Text style={styles.sectionDesc}>
+              Finish these steps to submit your application for review.
+            </Text>
+
+            <ChecklistItem
+              label="Add Vehicle Details"
+              done={hasVehicle}
+              onPress={onNavigateVehicleDetails}
+            />
+            <ChecklistItem
+              label="Upload Profile Photo"
+              done={hasProfilePhoto}
+              onPress={onNavigateDocumentUpload}
+            />
+            <ChecklistItem
+              label="Upload ID / Iqama"
+              done={hasNationalId}
+              onPress={onNavigateDocumentUpload}
+            />
+            <ChecklistItem
+              label="Upload Driving License"
+              done={hasLicense}
+              onPress={onNavigateDocumentUpload}
+            />
+            <ChecklistItem
+              label="Upload Vehicle Photo"
+              done={hasVehiclePhoto}
+              onPress={onNavigateDocumentUpload}
+            />
+            <ChecklistItem
+              label="Upload Vehicle Registration"
+              done={hasRegistration}
+              onPress={onNavigateDocumentUpload}
+            />
+            <ChecklistItem
+              label="Upload Vehicle Insurance"
+              done={hasInsurance}
+              onPress={onNavigateDocumentUpload}
+            />
+          </>
+        )}
+      </Card>
+
+      {/* Sign out */}
+      <Button
+        title="Sign Out"
+        variant="outline"
+        onPress={handleLogout}
+        style={styles.signOutBtn}
       />
+    </ScrollView>
+  );
 
-      <ScrollView contentContainerStyle={styles.content}>
-        {/* Driver Card */}
-        <Card style={styles.profileCard}>
-          <View style={styles.avatarRow}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>
-                {user?.fullName?.charAt(0).toUpperCase() || 'D'}
-              </Text>
-            </View>
-            <View style={styles.profileText}>
-              <View style={styles.roleBadge}>
-                <Text style={styles.roleBadgeText}>INDEPENDENT DRIVER</Text>
-              </View>
-              <Text style={styles.userName}>{user?.fullName || 'Driver'}</Text>
-              <Text style={styles.userPhone}>{user?.phoneNumber}</Text>
-            </View>
-          </View>
+  // ─── APPROVED view ────────────────────────────────────────────────────────
+  const ApprovedView = () => (
+    <ScrollView contentContainerStyle={styles.content}>
+      <ProfileCard />
+      <StatusBanner />
+
+      {/* Stats row */}
+      <View style={styles.statsRow}>
+        <Card style={styles.statCard}>
+          <Text style={styles.statLabel}>WALLET</Text>
+          <Text style={styles.statValue}>{walletDisplay}</Text>
+          <Text style={styles.statSub}>Balance</Text>
         </Card>
-
-        {/* Verification Status Banner */}
-        <Card style={styles.statusCard}>
-          <View style={styles.statusHeader}>
-            <Text style={styles.statusTitle}>Document Verification</Text>
-            <View
-              style={[
-                styles.statusPill,
-                verificationStatus === 'APPROVED'
-                  ? styles.statusApproved
-                  : styles.statusPending,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.statusText,
-                  verificationStatus === 'APPROVED'
-                    ? styles.statusTextApproved
-                    : styles.statusTextPending,
-                ]}
-              >
-                {verificationStatus}
-              </Text>
-            </View>
-          </View>
-          <Text style={styles.statusDesc}>
-            {verificationStatus === 'PENDING'
-              ? 'Your driver account has been created. Vehicle registration, Istimara, and license document submission will be unlocked in Phase 3.'
-              : 'Your driver credentials have been approved.'}
+        <Card style={styles.statCard}>
+          <Text style={styles.statLabel}>RATING</Text>
+          <Text style={styles.statValue}>{ratingDisplay}</Text>
+          <Text style={styles.statSub}>
+            {driverProfile && driverProfile.totalTripsCount > 0
+              ? `${driverProfile.totalTripsCount} trips`
+              : 'New Driver'}
           </Text>
         </Card>
+      </View>
 
-        {/* Wallet & Stats Preview */}
-        <View style={styles.statsRow}>
-          <Card style={styles.statCard}>
-            <Text style={styles.statLabel}>WALLET</Text>
-            <Text style={styles.statValue}>0.00 SAR</Text>
-            <Text style={styles.statSub}>Balance</Text>
-          </Card>
-
-          <Card style={styles.statCard}>
-            <Text style={styles.statLabel}>RATING</Text>
-            <Text style={styles.statValue}>5.0 ★</Text>
-            <Text style={styles.statSub}>New Driver</Text>
-          </Card>
-        </View>
-
-        {/* Driver Capabilities Card */}
-        <Card>
-          <Text style={styles.sectionTitle}>Driver Actions</Text>
-          <View style={styles.actionButtonsRow}>
-            <Button
-              title="Vehicle Details"
-              onPress={onNavigateVehicleDetails}
-              style={styles.actionButton}
-            />
-            <Button
-              title="Upload Documents"
-              onPress={onNavigateDocumentUpload}
-              style={styles.actionButton}
-            />
+      {/* Online/Offline toggle */}
+      <Card>
+        <Text style={styles.sectionTitle}>Driver Status</Text>
+        <View style={styles.toggleRow}>
+          <View>
+            <Text style={styles.toggleLabel}>
+              {isOnline ? '🟢  Online — Accepting trips' : '⚫  Offline — Not available'}
+            </Text>
+            <Text style={styles.toggleSub}>
+              Toggle to {isOnline ? 'stop' : 'start'} receiving trip requests
+            </Text>
           </View>
-          <View style={styles.toggleRow}>
-            <Text style={styles.toggleText}>Driver Status: {isOnline ? 'Online' : 'Offline'}</Text>
+          {updatingStatus ? (
+            <ActivityIndicator size="small" color={colors.secondary} />
+          ) : (
             <Switch
               value={isOnline}
               onValueChange={handleToggleStatus}
-              disabled={updatingStatus}
+              trackColor={{ false: colors.border, true: '#22c55e' }}
+              thumbColor={isOnline ? '#fff' : '#fff'}
             />
-          </View>
-        </Card>
-      </ScrollView>
+          )}
+        </View>
+      </Card>
+
+      {/* Quick Actions */}
+      <Card>
+        <Text style={styles.sectionTitle}>Manage</Text>
+        <View style={styles.actionButtonsRow}>
+          <Button
+            title="Vehicle Details"
+            variant="outline"
+            onPress={onNavigateVehicleDetails}
+            style={styles.actionButton}
+          />
+          <Button
+            title="Documents"
+            variant="outline"
+            onPress={onNavigateDocumentUpload}
+            style={styles.actionButton}
+          />
+        </View>
+      </Card>
+
+      {/* Sign out */}
+      <Button
+        title="Sign Out"
+        variant="outline"
+        onPress={handleLogout}
+        style={styles.signOutBtn}
+      />
+    </ScrollView>
+  );
+
+  // ─── Loading state ────────────────────────────────────────────────────────
+  if (loadingProfile) {
+    return (
+      <View style={styles.container}>
+        <Header title="SHADDAD" subtitle="Driver Mode" />
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color={colors.secondary} />
+          <Text style={styles.loaderText}>Loading your dashboard…</Text>
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <Header title="SHADDAD" subtitle="Driver Mode" />
+      {isApproved ? <ApprovedView /> : <PendingView />}
+      
+      <IncomingRequestModal 
+        trip={incomingTrip} 
+        visible={!!incomingTrip} 
+        onRespond={(accepted) => {
+          setIncomingTrip(null);
+          if (accepted) Alert.alert('Success', 'Trip Accepted!');
+        }} 
+      />
     </View>
   );
 };
+
+// ─── Checklist item component ────────────────────────────────────────────────
+
+interface ChecklistItemProps {
+  label: string;
+  done: boolean;
+  onPress: () => void;
+}
+
+const ChecklistItem: React.FC<ChecklistItemProps> = ({ label, done, onPress }) => (
+  <TouchableOpacity
+    style={[styles.checklistItem, done && styles.checklistItemDone]}
+    onPress={done ? undefined : onPress}
+    disabled={done}
+    activeOpacity={done ? 1 : 0.7}
+  >
+    <View style={[styles.checklistIcon, done && styles.checklistIconDone]}>
+      <Text style={[styles.checklistIconText, done && styles.checklistIconTextDone]}>
+        {done ? '✓' : '›'}
+      </Text>
+    </View>
+    <View style={styles.checklistTextGroup}>
+      <Text style={[styles.checklistLabel, done && styles.checklistLabelDone]}>{label}</Text>
+      <Text style={styles.checklistSub}>{done ? 'Completed' : 'Tap to complete'}</Text>
+    </View>
+  </TouchableOpacity>
+);
+
+// ─── Styles ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
   },
+  loaderContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+  },
+  loaderText: {
+    fontSize: 14,
+    color: colors.textMuted,
+  },
   content: {
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 48,
+    gap: 16,
   },
-  signOutButton: {
-    height: 36,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-  },
-  signOutText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
+  // Profile card
   profileCard: {
-    backgroundColor: colors.secondary, // Black
+    backgroundColor: colors.secondary,
     borderColor: colors.secondary,
     padding: 20,
   },
@@ -192,7 +498,7 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: colors.primary, // White
+    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 16,
@@ -200,7 +506,7 @@ const styles = StyleSheet.create({
   avatarText: {
     fontSize: 22,
     fontWeight: '800',
-    color: colors.secondary, // Black
+    color: colors.secondary,
   },
   profileText: {
     flex: 1,
@@ -222,13 +528,14 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 18,
     fontWeight: '700',
-    color: colors.primary, // White
+    color: colors.primary,
   },
   userPhone: {
     fontSize: 13,
     color: '#9CA3AF',
     marginTop: 2,
   },
+  // Status banner
   statusCard: {
     backgroundColor: colors.surface,
   },
@@ -248,36 +555,122 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 12,
   },
-  statusPending: {
-    backgroundColor: colors.warningBg,
-    borderColor: colors.warning,
-    borderWidth: 1,
-  },
-  statusApproved: {
-    backgroundColor: colors.successBg,
-    borderColor: colors.success,
-    borderWidth: 1,
-  },
-  statusText: {
+  statusPillText: {
     fontSize: 10,
     fontWeight: '800',
     letterSpacing: 0.5,
-  },
-  statusTextPending: {
-    color: colors.warning,
-  },
-  statusTextApproved: {
-    color: colors.success,
   },
   statusDesc: {
     fontSize: 12,
     color: colors.textMuted,
     lineHeight: 18,
   },
+  // Onboarding checklist
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: 4,
+  },
+  sectionDesc: {
+    fontSize: 12,
+    color: colors.textMuted,
+    marginBottom: 14,
+    lineHeight: 18,
+  },
+  checklistItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    gap: 12,
+  },
+  checklistItemDone: {
+    opacity: 0.65,
+  },
+  checklistIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surface,
+  },
+  checklistIconDone: {
+    backgroundColor: colors.successBg,
+    borderColor: colors.success,
+  },
+  checklistIconText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.textMuted,
+  },
+  checklistIconTextDone: {
+    color: colors.success,
+    fontSize: 14,
+  },
+  checklistTextGroup: {
+    flex: 1,
+  },
+  checklistLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  checklistLabelDone: {
+    color: colors.textMuted,
+    textDecorationLine: 'line-through',
+  },
+  checklistSub: {
+    fontSize: 11,
+    color: colors.textMuted,
+    marginTop: 1,
+  },
+  submittedBanner: {
+    marginTop: 16,
+    padding: 12,
+    backgroundColor: colors.successBg,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.success,
+  },
+  submittedText: {
+    fontSize: 13,
+    color: colors.success,
+    fontWeight: '600',
+    lineHeight: 18,
+  },
+  // Under Review State
+  underReviewContainer: {
+    alignItems: 'center',
+    paddingVertical: 32,
+    paddingHorizontal: 16,
+  },
+  underReviewIcon: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
+  underReviewTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  underReviewDesc: {
+    fontSize: 14,
+    color: colors.textMuted,
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 16,
+  },
+  // Stats row (approved only)
   statsRow: {
     flexDirection: 'row',
     gap: 12,
-    marginBottom: 0,
   },
   statCard: {
     flex: 1,
@@ -299,31 +692,34 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: colors.textLight,
   },
-  sectionTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: colors.text,
-    marginBottom: 12,
-  },
-  actionButtonsRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 16,
-  },
-  actionButton: {
-    flex: 1,
-  },
+  // Toggle row (approved only)
   toggleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
+    paddingTop: 4,
   },
-  toggleText: {
+  toggleLabel: {
     fontSize: 14,
     fontWeight: '600',
     color: colors.text,
+  },
+  toggleSub: {
+    fontSize: 11,
+    color: colors.textMuted,
+    marginTop: 2,
+  },
+  // Action buttons (approved only)
+  actionButtonsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 12,
+  },
+  actionButton: {
+    flex: 1,
+  },
+  // Sign out
+  signOutBtn: {
+    marginTop: 4,
   },
 });

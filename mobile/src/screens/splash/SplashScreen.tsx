@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors } from '../../theme/colors';
 import { useAuth } from '../../hooks/useAuth';
@@ -8,12 +8,15 @@ interface SplashScreenProps {
 }
 
 export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
-  const { user, isAuthenticated, isInitializing, loadProfile } = useAuth();
+  const { isAuthenticated, isInitializing, loadProfile } = useAuth();
+  const hasRun = useRef(false);
 
   useEffect(() => {
-    const bootstrap = async () => {
-      if (isInitializing) return;
+    if (isInitializing) return;
+    if (hasRun.current) return;
+    hasRun.current = true;
 
+    const bootstrap = async () => {
       if (isAuthenticated) {
         try {
           const profile = await loadProfile();
@@ -28,7 +31,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
           onFinish('role-select');
         }
       } else {
-        // Small delay to show branding
         setTimeout(() => {
           onFinish('role-select');
         }, 1000);
@@ -36,7 +38,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
     };
 
     void bootstrap();
-  }, [isInitializing, isAuthenticated, user, loadProfile, onFinish]);
+  }, [isInitializing, isAuthenticated]); // eslint-disable-line react-hooks/exhaustive-deps
+
 
   return (
     <View style={styles.container}>

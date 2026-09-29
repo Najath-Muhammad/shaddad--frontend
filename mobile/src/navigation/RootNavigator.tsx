@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, SafeAreaView, StatusBar } from 'react-native';
 import { colors } from '../theme/colors';
 import { useAuthStore } from '../store/authStore';
@@ -12,6 +12,9 @@ import { CustomerHomeScreen } from '../screens/customer/CustomerHomeScreen';
 import { DriverHomeScreen } from '../screens/driver/DriverHomeScreen';
 import { VehicleDetailsScreen } from '../screens/driver/VehicleDetailsScreen';
 import { DocumentUploadScreen } from '../screens/driver/DocumentUploadScreen';
+import { CreateTripScreen } from '../screens/customer/CreateTripScreen';
+import { TripReviewScreen } from '../screens/customer/TripReviewScreen';
+import { WaitingForDriverScreen } from '../screens/customer/WaitingForDriverScreen';
 
 type ScreenState =
   | 'splash'
@@ -23,10 +26,14 @@ type ScreenState =
   | 'customer-home'
   | 'driver-home'
   | 'vehicle-details'
-  | 'document-upload';
+  | 'document-upload'
+  | 'create-trip'
+  | 'trip-review'
+  | 'waiting-driver';
 
 export const RootNavigator: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<ScreenState>('splash');
+  const [tripState, setTripState] = useState<{ driverId?: string; vehicleType?: string; tripDetails?: any; tripId?: string }>({});
   const { initialize, isAuthenticated, activeRole } = useAuthStore();
 
   useEffect(() => {
@@ -43,15 +50,20 @@ export const RootNavigator: React.FC = () => {
     }
   }, [isAuthenticated, activeRole]);
 
+  const handleSplashFinish = useCallback(
+    (dest: 'role-select' | 'customer-home' | 'driver-home') => {
+      setCurrentScreen(dest);
+    },
+    []
+  );
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
       <View style={styles.container}>
         {currentScreen === 'splash' && (
           <SplashScreen
-            onFinish={(dest) => {
-              setCurrentScreen(dest);
-            }}
+            onFinish={handleSplashFinish}
           />
         )}
 
@@ -97,6 +109,40 @@ export const RootNavigator: React.FC = () => {
         {currentScreen === 'customer-home' && (
           <CustomerHomeScreen
             onLogout={() => setCurrentScreen('role-select')}
+            onNavigateCreateTrip={(driverId, vehicleType) => {
+              setTripState({ driverId, vehicleType });
+              setCurrentScreen('create-trip');
+            }}
+          />
+        )}
+
+        {currentScreen === 'create-trip' && (
+          <CreateTripScreen
+            driverId={tripState.driverId!}
+            vehicleType={tripState.vehicleType!}
+            onCalculatePrice={(tripDetails) => {
+              setTripState({ ...tripState, tripDetails });
+              setCurrentScreen('trip-review');
+            }}
+            onCancel={() => setCurrentScreen('customer-home')}
+          />
+        )}
+
+        {currentScreen === 'trip-review' && (
+          <TripReviewScreen
+            tripDetails={tripState.tripDetails}
+            onConfirm={(tripId) => {
+              setTripState({ ...tripState, tripId });
+              setCurrentScreen('waiting-driver');
+            }}
+            onCancel={() => setCurrentScreen('create-trip')}
+          />
+        )}
+
+        {currentScreen === 'waiting-driver' && (
+          <WaitingForDriverScreen
+            tripId={tripState.tripId!}
+            onFinish={() => setCurrentScreen('customer-home')}
           />
         )}
 

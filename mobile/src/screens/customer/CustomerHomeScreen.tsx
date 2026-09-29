@@ -6,13 +6,14 @@ import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { useAuth } from '../../hooks/useAuth';
 import { customerDriverApi } from '../../api/driver.api';
-
 interface CustomerHomeScreenProps {
   onLogout: () => void;
+  onNavigateCreateTrip: (driverId: string, vehicleType: string) => void;
 }
 
 export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
   onLogout,
+  onNavigateCreateTrip,
 }) => {
   const { user, logout } = useAuth();
   const [nearbyDrivers, setNearbyDrivers] = useState<any[]>([]);
@@ -124,6 +125,13 @@ export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
                       </Text>
                     )}
                   </View>
+                  <Button 
+                    title="Request" 
+                    onPress={() => onNavigateCreateTrip(
+                      item.driverProfile?.id, 
+                      item.driverProfile?.vehicle?.vehicleType || 'DYNA' 
+                    )} 
+                  />
                 </View>
               )}
             />

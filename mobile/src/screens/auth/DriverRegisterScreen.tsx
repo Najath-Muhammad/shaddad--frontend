@@ -23,6 +23,7 @@ export const DriverRegisterScreen: React.FC<DriverRegisterScreenProps> = ({
   const [fullName, setFullName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('+9665');
   const [nationalIdNumber, setNationalIdNumber] = useState('');
+  const [licenseNumber, setLicenseNumber] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [localError, setLocalError] = useState<string | null>(null);
@@ -56,6 +57,7 @@ export const DriverRegisterScreen: React.FC<DriverRegisterScreenProps> = ({
         fullName: fullName.trim(),
         phoneNumber: phoneNumber.trim(),
         nationalIdNumber: nationalIdNumber.trim() || undefined,
+        licenseNumber: licenseNumber.trim() || undefined,
         password,
       });
       onSuccess();
@@ -103,6 +105,15 @@ export const DriverRegisterScreen: React.FC<DriverRegisterScreenProps> = ({
           placeholder="1XXXXXXXXX or 2XXXXXXXXX"
           value={nationalIdNumber}
           onChangeText={setNationalIdNumber}
+          keyboardType="numeric"
+          maxLength={10}
+        />
+
+        <Input
+          label="Driving License Number (Optional)"
+          placeholder="e.g. 1XXXXXXXXX"
+          value={licenseNumber}
+          onChangeText={setLicenseNumber}
           keyboardType="numeric"
           maxLength={10}
         />
