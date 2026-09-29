@@ -19,6 +19,7 @@ export const TripReviewScreen: React.FC<Props> = ({ tripDetails, onConfirm, onCa
 
   const [loading, setLoading] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [createdTripId, setCreatedTripId] = useState<string>('');
 
   const handleConfirm = async () => {
     try {
@@ -33,6 +34,7 @@ export const TripReviewScreen: React.FC<Props> = ({ tripDetails, onConfirm, onCa
       };
 
       const res = await tripApi.createTrip(tripData);
+      setCreatedTripId(res.data.data.id);
       setShowSuccessModal(true);
     } catch (error: any) {
       const errData = error.response?.data?.error;
@@ -82,7 +84,7 @@ export const TripReviewScreen: React.FC<Props> = ({ tripDetails, onConfirm, onCa
             </Text>
             <TouchableOpacity 
               style={styles.modalButton} 
-              onPress={() => onConfirm('completed')}
+              onPress={() => onConfirm(createdTripId)}
             >
               <Text style={styles.modalButtonText}>Back to Home</Text>
             </TouchableOpacity>
