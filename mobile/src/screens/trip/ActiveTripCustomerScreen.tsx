@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Text, ScrollView } from 'react-native';
+import { View, StyleSheet, Text, ScrollView, Alert } from 'react-native';
 import { tripApi } from '../../api/trip.api';
 import { socketClient } from '../../api/socket.client';
 import { Button } from '../../components/common/Button';
@@ -14,21 +14,25 @@ export const ActiveTripCustomerScreen: React.FC<Props> = ({ tripId, onTripComple
   const [trip, setTrip] = useState<any>(null);
   const [driverLocation, setDriverLocation] = useState<{ lat: number, lng: number } | null>(null);
 
-  const fetchTrip = async () => {
-    try {
-      const res = await tripApi.getTrip(tripId);
-      setTrip(res.data.data);
-      if (res.data.data.status === 'COMPLETED') {
-        onTripCompleted();
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
   useEffect(() => {
+    let interval: any;
+
+    const fetchTrip = async () => {
+      try {
+        const res = await tripApi.getTrip(tripId);
+        setTrip(res.data.data);
+        if (res.data.data.status === 'COMPLETED') {
+          clearInterval(interval);
+          Alert.alert('Trip Completed', 'Your cargo has been delivered successfully!');
+          onTripCompleted();
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
     fetchTrip();
-    const interval = setInterval(fetchTrip, 5000); // Polling for status updates
+    interval = setInterval(fetchTrip, 5000); // Polling for status updates
 
     socketClient.connect();
     socketClient.joinTrip(tripId);
