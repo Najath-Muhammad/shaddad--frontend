@@ -117,6 +117,10 @@ export const RootNavigator: React.FC = () => {
               setTripState({ driverId, vehicleType });
               setCurrentScreen('create-trip');
             }}
+            onNavigateActiveTrip={(tripId) => {
+              setTripState({ ...tripState, tripId });
+              setCurrentScreen('active-trip-customer');
+            }}
           />
         )}
 

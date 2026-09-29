@@ -112,7 +112,9 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
           // Poll active trips
           const activeRes = await tripApi.getDriverTrips();
           if (activeRes.data?.data) {
-            const acceptedTrip = activeRes.data.data.find((t: any) => t.status === 'ACCEPTED');
+            const acceptedTrip = activeRes.data.data.find((t: any) => 
+              !['PENDING_DRIVER_RESPONSE', 'REJECTED', 'EXPIRED', 'COMPLETED'].includes(t.status)
+            );
             setActiveTrip(acceptedTrip || null);
           }
         } catch (error) {
@@ -218,24 +220,7 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
 
   // ────────────────────────────────────────────────────────────────────────────
 
-  const ProfileCard = () => (
-    <Card style={styles.profileCard}>
-      <View style={styles.avatarRow}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>
-            {user?.fullName?.charAt(0).toUpperCase() || 'D'}
-          </Text>
-        </View>
-        <View style={styles.profileText}>
-          <View style={styles.roleBadge}>
-            <Text style={styles.roleBadgeText}>INDEPENDENT DRIVER</Text>
-          </View>
-          <Text style={styles.userName}>{user?.fullName || 'Driver'}</Text>
-          <Text style={styles.userPhone}>{user?.phoneNumber}</Text>
-        </View>
-      </View>
-    </Card>
-  );
+
 
   const StatusBanner = () => (
     <Card style={[styles.statusCard, statusConfig.cardStyle]}>
@@ -260,7 +245,6 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
   // ─── PENDING / REJECTED / SUSPENDED view ─────────────────────────────────
   const PendingView = () => (
     <ScrollView contentContainerStyle={styles.content}>
-      <ProfileCard />
       <StatusBanner />
 
       {/* Onboarding checklist or Under Review State */}
@@ -343,9 +327,8 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
   // ─── APPROVED view ────────────────────────────────────────────────────────
   const ApprovedView = () => (
     <ScrollView contentContainerStyle={styles.content}>
-      {activeTrip && <ActiveTripCard trip={activeTrip} role="DRIVER" />}
+      {activeTrip && <ActiveTripCard trip={activeTrip} role="DRIVER" onPress={() => onNavigateActiveTrip(activeTrip.id)} />}
 
-      <ProfileCard />
       <StatusBanner />
 
       {/* Stats row */}
@@ -501,57 +484,7 @@ const styles = StyleSheet.create({
     paddingBottom: 48,
     gap: 16,
   },
-  // Profile card
-  profileCard: {
-    backgroundColor: colors.secondary,
-    borderColor: colors.secondary,
-    padding: 20,
-  },
-  avatarRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  avatar: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 16,
-  },
-  avatarText: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: colors.secondary,
-  },
-  profileText: {
-    flex: 1,
-  },
-  roleBadge: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
-    alignSelf: 'flex-start',
-    marginBottom: 4,
-  },
-  roleBadgeText: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: colors.primary,
-    letterSpacing: 0.8,
-  },
-  userName: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.primary,
-  },
-  userPhone: {
-    fontSize: 13,
-    color: '#9CA3AF',
-    marginTop: 2,
-  },
+
   // Status banner
   statusCard: {
     backgroundColor: colors.surface,

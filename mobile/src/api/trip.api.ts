@@ -13,6 +13,9 @@ export const tripApi = {
   getCustomerTrips: async () => {
     return apiClient.get('/customers/trips');
   },
+  getDriverTrip: async (tripId: string) => {
+    return apiClient.get(`/drivers/trips/${tripId}`);
+  },
   getDriverTrips: async () => {
     return apiClient.get('/drivers/trips');
   },

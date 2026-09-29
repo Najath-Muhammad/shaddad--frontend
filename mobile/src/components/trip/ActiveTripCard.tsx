@@ -1,20 +1,21 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Card } from '../common/Card';
 import { colors } from '../../theme/colors';
 
 interface ActiveTripCardProps {
   trip: any;
   role: 'CUSTOMER' | 'DRIVER';
+  onPress?: () => void;
 }
 
-export const ActiveTripCard: React.FC<ActiveTripCardProps> = ({ trip, role }) => {
+export const ActiveTripCard: React.FC<ActiveTripCardProps> = ({ trip, role, onPress }) => {
   if (!trip) return null;
 
   const isCustomer = role === 'CUSTOMER';
   const displayUser = isCustomer ? trip.driver?.user : trip.customer?.user;
   
-  return (
+  const CardContent = (
     <Card style={styles.card}>
       <View style={styles.header}>
         <Text style={styles.title}>Active Trip: {trip.status}</Text>
@@ -49,6 +50,12 @@ export const ActiveTripCard: React.FC<ActiveTripCardProps> = ({ trip, role }) =>
       )}
     </Card>
   );
+
+  if (onPress) {
+    return <TouchableOpacity onPress={onPress} activeOpacity={0.8}>{CardContent}</TouchableOpacity>;
+  }
+
+  return CardContent;
 };
 
 const styles = StyleSheet.create({

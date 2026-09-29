@@ -11,11 +11,13 @@ import { ActiveTripCard } from '../../components/trip/ActiveTripCard';
 interface CustomerHomeScreenProps {
   onLogout: () => void;
   onNavigateCreateTrip: (driverId: string, vehicleType: string) => void;
+  onNavigateActiveTrip: (tripId: string) => void;
 }
 
 export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
   onLogout,
   onNavigateCreateTrip,
+  onNavigateActiveTrip,
 }) => {
   const { user, logout } = useAuth();
   const [nearbyDrivers, setNearbyDrivers] = useState<any[]>([]);
@@ -26,8 +28,9 @@ export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
     try {
       const response = await tripApi.getCustomerTrips();
       if (response.data?.data) {
-        // Find the first accepted trip
-        const acceptedTrip = response.data.data.find((t: any) => t.status === 'ACCEPTED');
+        const acceptedTrip = response.data.data.find((t: any) => 
+          !['PENDING_DRIVER_RESPONSE', 'REJECTED', 'EXPIRED', 'COMPLETED'].includes(t.status)
+        );
         setActiveTrip(acceptedTrip || null);
       }
     } catch (error) {
@@ -80,37 +83,7 @@ export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
 
       <ScrollView contentContainerStyle={styles.content}>
         {/* Active Trip Section */}
-        {activeTrip && <ActiveTripCard trip={activeTrip} role="CUSTOMER" />}
-
-        {/* User Card */}
-        <Card style={styles.profileCard}>
-          <View style={styles.avatarRow}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>
-                {user?.fullName?.charAt(0).toUpperCase() || 'C'}
-              </Text>
-            </View>
-            <View style={styles.profileText}>
-              <View style={styles.roleBadge}>
-                <Text style={styles.roleBadgeText}>VERIFIED CUSTOMER</Text>
-              </View>
-              <Text style={styles.userName}>{user?.fullName || 'Customer'}</Text>
-              <Text style={styles.userPhone}>{user?.phoneNumber}</Text>
-            </View>
-          </View>
-        </Card>
-
-        {/* Phase 1 Verification Notice */}
-        <Card style={styles.infoCard}>
-          <Text style={styles.infoTitle}>Phase 1 Foundation Active</Text>
-          <Text style={styles.infoBody}>
-            Role-based authentication & token rotation verified.
-            {'\n\n'}
-            • Token Expiry: 15 min access, 7 day rotating refresh token.
-            {'\n'}
-            • Role: Customer access strictly enforced.
-          </Text>
-        </Card>
+        {activeTrip && <ActiveTripCard trip={activeTrip} role="CUSTOMER" onPress={() => onNavigateActiveTrip(activeTrip.id)} />}
 
         {/* Nearby Drivers */}
         <Card style={styles.driversCard}>
@@ -184,70 +157,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
-  profileCard: {
-    backgroundColor: colors.secondary, // Black
-    borderColor: colors.secondary,
-    padding: 20,
-  },
-  avatarRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  avatar: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: colors.primary, // White
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 16,
-  },
-  avatarText: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: colors.secondary, // Black
-  },
-  profileText: {
-    flex: 1,
-  },
-  roleBadge: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
-    alignSelf: 'flex-start',
-    marginBottom: 4,
-  },
-  roleBadgeText: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: colors.primary,
-    letterSpacing: 0.8,
-  },
-  userName: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.primary, // White
-  },
-  userPhone: {
-    fontSize: 13,
-    color: '#9CA3AF',
-    marginTop: 2,
-  },
-  infoCard: {
-    backgroundColor: colors.surface,
-  },
-  infoTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: colors.text,
-    marginBottom: 6,
-  },
-  infoBody: {
-    fontSize: 12,
-    color: colors.textMuted,
-    lineHeight: 18,
-  },
+
   sectionTitle: {
     fontSize: 15,
     fontWeight: '700',

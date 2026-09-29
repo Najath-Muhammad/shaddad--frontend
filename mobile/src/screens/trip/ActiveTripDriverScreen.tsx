@@ -18,13 +18,17 @@ export const ActiveTripDriverScreen: React.FC<Props> = ({ tripId, onTripComplete
 
   const fetchTrip = async () => {
     try {
-      const res = await tripApi.getTrip(tripId);
+      const res = await tripApi.getDriverTrip(tripId);
       setTrip(res.data.data);
       if (res.data.data.status === 'COMPLETED') {
         onTripCompleted();
       }
-    } catch (e) {
-      console.error(e);
+    } catch (e: any) {
+      console.error('fetchTrip Error:', e.response?.data || e.message);
+      if (e.response?.status === 404) {
+        Alert.alert('Trip not found', 'This trip may have been deleted or expired.');
+        onTripCompleted(); // Navigate away
+      }
     }
   };
 
