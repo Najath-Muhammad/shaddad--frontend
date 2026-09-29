@@ -34,6 +34,9 @@ export const tripApi = {
   initiatePayment: async (tripId: string) => {
     return apiClient.post(`/payments/trips/${tripId}/initiate`);
   },
+  simulatePaymentSuccess: async (tripId: string) => {
+    return apiClient.post(`/payments/trips/${tripId}/simulate-success`);
+  },
   submitReview: async (tripId: string, rating: number, comment?: string) => {
     return apiClient.post(`/customers/trips/${tripId}/review`, { rating, comment });
   }
