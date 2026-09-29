@@ -8,9 +8,10 @@ import { Card } from '../../components/common/Card';
 interface Props {
   tripId: string;
   onTripCompleted: () => void;
+  onNavigatePayment: () => void;
 }
 
-export const ActiveTripCustomerScreen: React.FC<Props> = ({ tripId, onTripCompleted }) => {
+export const ActiveTripCustomerScreen: React.FC<Props> = ({ tripId, onTripCompleted, onNavigatePayment }) => {
   const [trip, setTrip] = useState<any>(null);
   const [driverLocation, setDriverLocation] = useState<{ lat: number, lng: number } | null>(null);
 
@@ -47,14 +48,6 @@ export const ActiveTripCustomerScreen: React.FC<Props> = ({ tripId, onTripComple
     };
   }, [tripId]);
 
-  const handleTestPayment = async () => {
-    try {
-      await tripApi.confirmTestPayment(tripId);
-      fetchTrip();
-    } catch (e) {
-      console.error(e);
-    }
-  };
 
   if (!trip) return <View style={styles.container}><Text>Loading...</Text></View>;
 
@@ -66,7 +59,7 @@ export const ActiveTripCustomerScreen: React.FC<Props> = ({ tripId, onTripComple
       </Card>
 
       {trip.status === 'ACCEPTED' && (
-        <Button title="Simulate Test Payment" onPress={handleTestPayment} />
+        <Button title="Pay Now" onPress={onNavigatePayment} />
       )}
 
       {trip.deliveryOtp && (

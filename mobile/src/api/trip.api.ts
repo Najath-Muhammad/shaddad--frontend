@@ -31,7 +31,10 @@ export const tripApi = {
   submitDeliveryProof: async (tripId: string, otp: string, photoUrl?: string) => {
     return apiClient.post(`/drivers/trips/${tripId}/deliver`, { otp, photoUrl });
   },
-  confirmTestPayment: async (tripId: string) => {
-    return apiClient.post(`/customers/trips/${tripId}/test-payment`, {});
+  initiatePayment: async (tripId: string) => {
+    return apiClient.post(`/payments/trips/${tripId}/initiate`);
+  },
+  submitReview: async (tripId: string, rating: number, comment?: string) => {
+    return apiClient.post(`/customers/trips/${tripId}/review`, { rating, comment });
   }
 };

@@ -17,6 +17,11 @@ import { TripReviewScreen } from '../screens/customer/TripReviewScreen';
 import { WaitingForDriverScreen } from '../screens/customer/WaitingForDriverScreen';
 import { ActiveTripCustomerScreen } from '../screens/trip/ActiveTripCustomerScreen';
 import { ActiveTripDriverScreen } from '../screens/trip/ActiveTripDriverScreen';
+import { PaymentCheckoutScreen } from '../screens/trip/PaymentCheckoutScreen';
+import { TripReviewRatingScreen } from '../screens/trip/TripReviewRatingScreen';
+import { TripHistoryScreen } from '../screens/trip/TripHistoryScreen';
+import { Alert } from 'react-native';
+import { socketClient } from '../api/socket.client';
 
 type ScreenState =
   | 'splash'
@@ -33,7 +38,10 @@ type ScreenState =
   | 'trip-review'
   | 'waiting-driver'
   | 'active-trip-customer'
-  | 'active-trip-driver';
+  | 'active-trip-driver'
+  | 'payment-checkout'
+  | 'trip-review-rating'
+  | 'trip-history';
 
 export const RootNavigator: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<ScreenState>('splash');
@@ -51,6 +59,17 @@ export const RootNavigator: React.FC = () => {
       } else if (activeRole === 'CUSTOMER') {
         setCurrentScreen('customer-home');
       }
+
+      socketClient.connect();
+      socketClient.onNotification((data: any) => {
+        Alert.alert(data.title || 'Notification', data.body || '');
+      });
+
+      return () => {
+        socketClient.offNotification();
+      };
+    } else {
+      socketClient.disconnect();
     }
   }, [isAuthenticated, activeRole]);
 
@@ -121,6 +140,7 @@ export const RootNavigator: React.FC = () => {
               setTripState({ ...tripState, tripId });
               setCurrentScreen('active-trip-customer');
             }}
+            onNavigateHistory={() => setCurrentScreen('trip-history')}
           />
         )}
 
@@ -157,8 +177,28 @@ export const RootNavigator: React.FC = () => {
         {currentScreen === 'active-trip-customer' && (
           <ActiveTripCustomerScreen
             tripId={tripState.tripId!}
-            onTripCompleted={() => setCurrentScreen('customer-home')}
+            onTripCompleted={() => setCurrentScreen('trip-review-rating')}
+            onNavigatePayment={() => setCurrentScreen('payment-checkout')}
           />
+        )}
+
+        {currentScreen === 'payment-checkout' && (
+          <PaymentCheckoutScreen
+            tripId={tripState.tripId!}
+            onPaymentSuccess={() => setCurrentScreen('active-trip-customer')}
+            onCancel={() => setCurrentScreen('active-trip-customer')}
+          />
+        )}
+
+        {currentScreen === 'trip-review-rating' && (
+          <TripReviewRatingScreen
+            tripId={tripState.tripId!}
+            onFinish={() => setCurrentScreen('customer-home')}
+          />
+        )}
+
+        {currentScreen === 'trip-history' && (
+          <TripHistoryScreen onBack={() => setCurrentScreen(activeRole === 'CUSTOMER' ? 'customer-home' : 'driver-home')} />
         )}
 
         {currentScreen === 'active-trip-driver' && (
@@ -177,6 +217,7 @@ export const RootNavigator: React.FC = () => {
               setTripState({ tripId });
               setCurrentScreen('active-trip-driver');
             }}
+            onNavigateHistory={() => setCurrentScreen('trip-history')}
           />
         )}
 

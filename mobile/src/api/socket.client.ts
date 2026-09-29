@@ -50,6 +50,14 @@ class SocketClient {
   offLocationUpdate() {
     this.socket?.off('driver_location_updated');
   }
+
+  onNotification(callback: (data: any) => void) {
+    this.socket?.on('notification', callback);
+  }
+
+  offNotification() {
+    this.socket?.off('notification');
+  }
 }
 
 export const socketClient = new SocketClient();

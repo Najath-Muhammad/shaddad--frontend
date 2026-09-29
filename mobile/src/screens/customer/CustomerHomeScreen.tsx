@@ -12,12 +12,14 @@ interface CustomerHomeScreenProps {
   onLogout: () => void;
   onNavigateCreateTrip: (driverId: string, vehicleType: string) => void;
   onNavigateActiveTrip: (tripId: string) => void;
+  onNavigateHistory: () => void;
 }
 
 export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
   onLogout,
   onNavigateCreateTrip,
   onNavigateActiveTrip,
+  onNavigateHistory,
 }) => {
   const { user, logout } = useAuth();
   const [nearbyDrivers, setNearbyDrivers] = useState<any[]>([]);
@@ -86,6 +88,14 @@ export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
       <ScrollView contentContainerStyle={styles.content}>
         {/* Active Trip Section */}
         {activeTrip && <ActiveTripCard trip={activeTrip} role="CUSTOMER" onPress={() => onNavigateActiveTrip(activeTrip.id)} />}
+
+        {/* History Button */}
+        <Button 
+          title="View Trip History" 
+          onPress={onNavigateHistory} 
+          variant="outline" 
+          style={{ marginBottom: 16 }} 
+        />
 
         {/* Nearby Drivers */}
         <Card style={styles.driversCard}>

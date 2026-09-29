@@ -26,6 +26,7 @@ interface DriverHomeScreenProps {
   onNavigateVehicleDetails: () => void;
   onNavigateDocumentUpload: () => void;
   onNavigateActiveTrip: (tripId: string) => void;
+  onNavigateHistory: () => void;
 }
 
 // ─── Status banner config ────────────────────────────────────────────────────
@@ -85,6 +86,7 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
   onNavigateVehicleDetails,
   onNavigateDocumentUpload,
   onNavigateActiveTrip,
+  onNavigateHistory,
 }) => {
   const { user, logout } = useAuth();
 
@@ -350,6 +352,12 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
           </Text>
         </Card>
       </View>
+
+      <Button 
+        title="View Trip History" 
+        onPress={onNavigateHistory} 
+        variant="outline" 
+      />
 
       {/* Online/Offline toggle */}
       <Card>
