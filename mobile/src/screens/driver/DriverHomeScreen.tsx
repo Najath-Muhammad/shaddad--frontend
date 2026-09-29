@@ -111,11 +111,13 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
 
           // Poll active trips
           const activeRes = await tripApi.getDriverTrips();
-          if (activeRes.data?.data) {
-            const acceptedTrip = activeRes.data.data.find((t: any) => 
-              !['PENDING_DRIVER_RESPONSE', 'REJECTED', 'EXPIRED', 'COMPLETED'].includes(t.status)
-            );
-            setActiveTrip(acceptedTrip || null);
+          if (activeRes.data?.data && activeRes.data.data.length > 0) {
+            const mostRecentTrip = activeRes.data.data[0];
+            if (!['PENDING_DRIVER_RESPONSE', 'REJECTED', 'EXPIRED', 'COMPLETED'].includes(mostRecentTrip.status)) {
+              setActiveTrip(mostRecentTrip);
+            } else {
+              setActiveTrip(null);
+            }
           }
         } catch (error) {
           console.error(error);

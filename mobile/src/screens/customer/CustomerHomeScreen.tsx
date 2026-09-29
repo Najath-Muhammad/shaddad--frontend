@@ -27,11 +27,13 @@ export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
   const fetchActiveTrip = async () => {
     try {
       const response = await tripApi.getCustomerTrips();
-      if (response.data?.data) {
-        const acceptedTrip = response.data.data.find((t: any) => 
-          !['PENDING_DRIVER_RESPONSE', 'REJECTED', 'EXPIRED', 'COMPLETED'].includes(t.status)
-        );
-        setActiveTrip(acceptedTrip || null);
+      if (response.data?.data && response.data.data.length > 0) {
+        const mostRecentTrip = response.data.data[0];
+        if (!['PENDING_DRIVER_RESPONSE', 'REJECTED', 'EXPIRED', 'COMPLETED'].includes(mostRecentTrip.status)) {
+          setActiveTrip(mostRecentTrip);
+        } else {
+          setActiveTrip(null);
+        }
       }
     } catch (error) {
       console.error('Failed to fetch customer trips:', error);

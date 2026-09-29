@@ -55,16 +55,36 @@ export const ActiveTripDriverScreen: React.FC<Props> = ({ tripId, onTripComplete
     };
   }, [tripId]);
 
-  const handleUpdateStatus = async (status: string) => {
-    try {
-      setLoading(true);
-      await tripApi.updateStatus(tripId, status);
-      await fetchTrip();
-    } catch (error: any) {
-      Alert.alert('Error', error.response?.data?.error?.message || 'Failed to update status');
-    } finally {
-      setLoading(false);
-    }
+  const handleUpdateStatus = (status: string) => {
+    const actionNames: Record<string, string> = {
+      GOING_TO_PICKUP: 'Go To Pickup',
+      DRIVER_ARRIVED: 'Arrived at Pickup',
+      CARGO_PICKED_UP: 'Confirm Cargo Picked Up',
+      IN_TRANSIT: 'Start Transit',
+      ARRIVED_AT_DESTINATION: 'Arrived at Destination'
+    };
+    
+    Alert.alert(
+      'Confirm Action',
+      `Are you sure you want to update the trip status to "${actionNames[status] || status}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Confirm', 
+          onPress: async () => {
+            try {
+              setLoading(true);
+              await tripApi.updateStatus(tripId, status);
+              await fetchTrip();
+            } catch (error: any) {
+              Alert.alert('Error', error.response?.data?.error?.message || 'Failed to update status');
+            } finally {
+              setLoading(false);
+            }
+          }
+        }
+      ]
+    );
   };
 
   const handleSubmitProof = async () => {
