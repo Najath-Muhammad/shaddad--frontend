@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, FlatList, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, FlatList, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { colors } from '../../theme/colors';
 import { Header } from '../../components/layout/Header';
 import { Card } from '../../components/common/Card';
@@ -8,20 +8,22 @@ import { useAuth } from '../../hooks/useAuth';
 import { customerDriverApi } from '../../api/driver.api';
 import { tripApi } from '../../api/trip.api';
 import { ActiveTripCard } from '../../components/trip/ActiveTripCard';
+import { BottomTabBar } from '../../components/layout/BottomTabBar';
+
 interface CustomerHomeScreenProps {
-  onLogout: () => void;
   onNavigateCreateTrip: (driverId: string, vehicleType: string) => void;
   onNavigateActiveTrip: (tripId: string) => void;
   onNavigateHistory: () => void;
+  onNavigateProfile: () => void;
 }
 
 export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
-  onLogout,
   onNavigateCreateTrip,
   onNavigateActiveTrip,
   onNavigateHistory,
+  onNavigateProfile,
 }) => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [nearbyDrivers, setNearbyDrivers] = useState<any[]>([]);
   const [loadingDrivers, setLoadingDrivers] = useState(true);
   const [activeTrip, setActiveTrip] = useState<any>(null);
@@ -45,7 +47,6 @@ export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
   const fetchNearbyDrivers = async () => {
     setLoadingDrivers(true);
     try {
-      // Hardcoding Riyadh coordinates for simulation
       const response = await customerDriverApi.getNearbyDrivers(24.7136, 46.6753, 50);
       setNearbyDrivers(response.data || []);
     } catch (error) {
@@ -59,68 +60,65 @@ export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
     fetchNearbyDrivers();
     fetchActiveTrip();
     
-    // Poll for active trips every 10 seconds
     const intervalId = setInterval(fetchActiveTrip, 10000);
     return () => clearInterval(intervalId);
   }, []);
 
-  const handleLogout = async () => {
-    await logout();
-    onLogout();
-  };
-
   return (
     <View style={styles.container}>
-      <Header
-        title="SHADDAD"
-        subtitle="Customer Mode"
-        rightAction={
-          <Button
-            title="Sign Out"
-            variant="outline"
-            onPress={handleLogout}
-            style={styles.signOutButton}
-            textStyle={styles.signOutText}
-          />
-        }
-      />
+      <Header title="SHADDAD" subtitle="Customer Mode" />
 
       <ScrollView contentContainerStyle={styles.content}>
-        {/* Active Trip Section */}
-        {activeTrip && <ActiveTripCard trip={activeTrip} role="CUSTOMER" onPress={() => onNavigateActiveTrip(activeTrip.id)} />}
+        
+        {/* Hero Welcome Section */}
+        <View style={styles.heroSection}>
+          <Text style={styles.greetingText}>Welcome back,</Text>
+          <Text style={styles.userName}>{user?.fullName?.split(' ')[0] || 'User'} 👋</Text>
+        </View>
 
-        {/* History Button */}
-        <Button 
-          title="View Trip History" 
-          onPress={onNavigateHistory} 
-          variant="outline" 
-          style={{ marginBottom: 16 }} 
-        />
+        {/* Active Trip Section */}
+        {activeTrip && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Current Trip</Text>
+            <ActiveTripCard trip={activeTrip} role="CUSTOMER" onPress={() => onNavigateActiveTrip(activeTrip.id)} />
+          </View>
+        )}
+
+        {/* Quick Actions */}
+        <View style={styles.quickActionsContainer}>
+          <TouchableOpacity style={styles.quickActionCard} onPress={onNavigateHistory}>
+            <Text style={styles.quickActionIcon}>📋</Text>
+            <Text style={styles.quickActionText}>Trip History</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.quickActionCard} onPress={fetchNearbyDrivers}>
+            <Text style={styles.quickActionIcon}>🔄</Text>
+            <Text style={styles.quickActionText}>Refresh</Text>
+          </TouchableOpacity>
+        </View>
 
         {/* Nearby Drivers */}
-        <Card style={styles.driversCard}>
-          <View style={styles.driversHeader}>
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Nearby Drivers</Text>
-            <Button
-              title="Refresh"
-              onPress={fetchNearbyDrivers}
-              variant="outline"
-              style={styles.refreshButton}
-              textStyle={styles.refreshText}
-            />
+            <Text style={styles.sectionSubtitle}>Select a driver to request a trip</Text>
           </View>
           
           {loadingDrivers ? (
-            <ActivityIndicator size="small" color={colors.primary} style={styles.loader} />
+            <ActivityIndicator size="small" color={colors.secondary} style={styles.loader} />
           ) : nearbyDrivers.length === 0 ? (
-            <Text style={styles.noDriversText}>No drivers found nearby.</Text>
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyIcon}>🚚</Text>
+              <Text style={styles.emptyText}>No drivers found nearby.</Text>
+            </View>
           ) : (
-            <FlatList
-              data={nearbyDrivers}
-              keyExtractor={(item, index) => index.toString()}
-              scrollEnabled={false}
-              renderItem={({ item }) => (
-                <View style={styles.driverItem}>
+            <View style={styles.driverList}>
+              {nearbyDrivers.map((item, index) => (
+                <TouchableOpacity 
+                  key={index.toString()} 
+                  style={styles.driverCard}
+                  onPress={() => onNavigateCreateTrip(item.id, item.vehicle?.vehicleType || 'DYNA')}
+                  activeOpacity={0.7}
+                >
                   <View style={styles.driverAvatar}>
                     <Text style={styles.driverAvatarText}>
                       {item.fullName?.charAt(0).toUpperCase() || 'D'}
@@ -128,25 +126,33 @@ export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
                   </View>
                   <View style={styles.driverInfo}>
                     <Text style={styles.driverName}>{item.fullName || 'Driver'}</Text>
-                    {item.vehicle && (
-                      <Text style={styles.driverVehicle}>
-                        {item.vehicle.make} {item.vehicle.model}
-                      </Text>
+                    {item.vehicle ? (
+                      <View style={styles.vehiclePill}>
+                        <Text style={styles.vehiclePillText}>
+                          {item.vehicle.make} {item.vehicle.model}
+                        </Text>
+                      </View>
+                    ) : (
+                      <Text style={styles.driverVehicle}>No vehicle info</Text>
                     )}
                   </View>
-                  <Button 
-                    title="Request" 
-                    onPress={() => onNavigateCreateTrip(
-                      item.id, 
-                      item.vehicle?.vehicleType || 'DYNA' 
-                    )} 
-                  />
-                </View>
-              )}
-            />
+                  <View style={styles.requestButton}>
+                    <Text style={styles.requestButtonText}>Request</Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
           )}
-        </Card>
+        </View>
       </ScrollView>
+
+      <BottomTabBar 
+        activeTab="home" 
+        onTabChange={(tab) => {
+          if (tab === 'history') onNavigateHistory();
+          if (tab === 'profile') onNavigateProfile();
+        }} 
+      />
     </View>
   );
 };
@@ -154,84 +160,157 @@ export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.surface,
   },
   content: {
     padding: 20,
     paddingBottom: 40,
   },
-  signOutButton: {
-    height: 36,
-    paddingHorizontal: 12,
-    borderRadius: 8,
+  
+  // Hero
+  heroSection: {
+    marginBottom: 24,
+    paddingTop: 8,
   },
-  signOutText: {
-    fontSize: 12,
-    fontWeight: '600',
+  greetingText: {
+    fontSize: 16,
+    color: colors.textMuted,
+  },
+  userName: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: colors.text,
+    marginTop: 4,
   },
 
+  section: {
+    marginBottom: 24,
+  },
+  sectionHeader: {
+    marginBottom: 16,
+  },
   sectionTitle: {
-    fontSize: 15,
+    fontSize: 18,
     fontWeight: '700',
     color: colors.text,
   },
-  driversCard: {
-    padding: 16,
-  },
-  driversHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  refreshButton: {
-    height: 30,
-    paddingHorizontal: 12,
-  },
-  refreshText: {
-    fontSize: 12,
-  },
-  loader: {
-    marginVertical: 20,
-  },
-  noDriversText: {
+  sectionSubtitle: {
     fontSize: 14,
     color: colors.textMuted,
-    textAlign: 'center',
-    marginVertical: 20,
+    marginTop: 2,
   },
-  driverItem: {
+
+  // Quick Actions
+  quickActionsContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 32,
+  },
+  quickActionCard: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 16,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  quickActionIcon: {
+    fontSize: 24,
+    marginBottom: 8,
+  },
+  quickActionText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.text,
+  },
+
+  // Driver List
+  loader: {
+    marginVertical: 40,
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 40,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+  },
+  emptyIcon: {
+    fontSize: 32,
+    marginBottom: 12,
+    opacity: 0.5,
+  },
+  emptyText: {
+    fontSize: 15,
+    color: colors.textMuted,
+    fontWeight: '500',
+  },
+  driverList: {
+    gap: 12,
+  },
+  driverCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   driverAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.primary,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.secondary,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: 16,
   },
   driverAvatarText: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '700',
-    color: colors.secondary,
+    color: colors.primary,
   },
   driverInfo: {
     flex: 1,
   },
   driverName: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
     color: colors.text,
+    marginBottom: 4,
+  },
+  vehiclePill: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.surface,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  vehiclePillText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.textMuted,
   },
   driverVehicle: {
     fontSize: 13,
-    color: colors.textMuted,
-    marginTop: 2,
+    color: colors.textLight,
+  },
+  requestButton: {
+    backgroundColor: '#000',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  requestButtonText: {
+    color: '#FFF',
+    fontSize: 13,
+    fontWeight: '700',
   },
 });

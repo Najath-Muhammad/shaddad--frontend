@@ -20,13 +20,14 @@ import { driverApi, DriverProfile } from '../../api/driver.api';
 import { tripApi } from '../../api/trip.api';
 import { IncomingRequestModal } from './IncomingRequestModal';
 import { ActiveTripCard } from '../../components/trip/ActiveTripCard';
+import { BottomTabBar } from '../../components/layout/BottomTabBar';
 
 interface DriverHomeScreenProps {
-  onLogout: () => void;
   onNavigateVehicleDetails: () => void;
   onNavigateDocumentUpload: () => void;
   onNavigateActiveTrip: (tripId: string) => void;
   onNavigateHistory: () => void;
+  onNavigateProfile: () => void;
 }
 
 // ─── Status banner config ────────────────────────────────────────────────────
@@ -82,13 +83,13 @@ const STATUS_CONFIG: Record<VerificationStatus, StatusConfig> = {
 // ─── Main component ──────────────────────────────────────────────────────────
 
 export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
-  onLogout,
   onNavigateVehicleDetails,
   onNavigateDocumentUpload,
   onNavigateActiveTrip,
   onNavigateHistory,
+  onNavigateProfile,
 }) => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   const [driverProfile, setDriverProfile] = useState<DriverProfile | null>(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
@@ -172,10 +173,6 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
   }, [fetchProfile]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
-  const handleLogout = async () => {
-    await logout();
-    onLogout();
-  };
 
   const handleToggleStatus = async (value: boolean) => {
     setUpdatingStatus(true);
@@ -246,12 +243,10 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
     </Card>
   );
 
-  // ─── PENDING / REJECTED / SUSPENDED view ─────────────────────────────────
   const PendingView = () => (
     <ScrollView contentContainerStyle={styles.content}>
       <StatusBanner />
 
-      {/* Onboarding checklist or Under Review State */}
       <Card>
         {allDocsDone && hasVehicle ? (
           <View style={styles.underReviewContainer}>
@@ -279,56 +274,19 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
               Finish these steps to submit your application for review.
             </Text>
 
-            <ChecklistItem
-              label="Add Vehicle Details"
-              done={hasVehicle}
-              onPress={onNavigateVehicleDetails}
-            />
-            <ChecklistItem
-              label="Upload Profile Photo"
-              done={hasProfilePhoto}
-              onPress={onNavigateDocumentUpload}
-            />
-            <ChecklistItem
-              label="Upload ID / Iqama"
-              done={hasNationalId}
-              onPress={onNavigateDocumentUpload}
-            />
-            <ChecklistItem
-              label="Upload Driving License"
-              done={hasLicense}
-              onPress={onNavigateDocumentUpload}
-            />
-            <ChecklistItem
-              label="Upload Vehicle Photo"
-              done={hasVehiclePhoto}
-              onPress={onNavigateDocumentUpload}
-            />
-            <ChecklistItem
-              label="Upload Vehicle Registration"
-              done={hasRegistration}
-              onPress={onNavigateDocumentUpload}
-            />
-            <ChecklistItem
-              label="Upload Vehicle Insurance"
-              done={hasInsurance}
-              onPress={onNavigateDocumentUpload}
-            />
+            <ChecklistItem label="Add Vehicle Details" done={hasVehicle} onPress={onNavigateVehicleDetails} />
+            <ChecklistItem label="Upload Profile Photo" done={hasProfilePhoto} onPress={onNavigateDocumentUpload} />
+            <ChecklistItem label="Upload ID / Iqama" done={hasNationalId} onPress={onNavigateDocumentUpload} />
+            <ChecklistItem label="Upload Driving License" done={hasLicense} onPress={onNavigateDocumentUpload} />
+            <ChecklistItem label="Upload Vehicle Photo" done={hasVehiclePhoto} onPress={onNavigateDocumentUpload} />
+            <ChecklistItem label="Upload Vehicle Registration" done={hasRegistration} onPress={onNavigateDocumentUpload} />
+            <ChecklistItem label="Upload Vehicle Insurance" done={hasInsurance} onPress={onNavigateDocumentUpload} />
           </>
         )}
       </Card>
-
-      {/* Sign out */}
-      <Button
-        title="Sign Out"
-        variant="outline"
-        onPress={handleLogout}
-        style={styles.signOutBtn}
-      />
     </ScrollView>
   );
 
-  // ─── APPROVED view ────────────────────────────────────────────────────────
   const ApprovedView = () => (
     <ScrollView contentContainerStyle={styles.content}>
       {activeTrip && <ActiveTripCard trip={activeTrip} role="DRIVER" onPress={() => onNavigateActiveTrip(activeTrip.id)} />}
@@ -353,12 +311,6 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
         </Card>
       </View>
 
-      <Button 
-        title="View Trip History" 
-        onPress={onNavigateHistory} 
-        variant="outline" 
-      />
-
       {/* Online/Offline toggle */}
       <Card>
         <Text style={styles.sectionTitle}>Driver Status</Text>
@@ -368,7 +320,7 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
               {isOnline ? '🟢  Online — Accepting trips' : '⚫  Offline — Not available'}
             </Text>
             <Text style={styles.toggleSub}>
-              Toggle to {isOnline ? 'stop' : 'start'} receiving trip requests
+              Toggle to {isOnline ? 'stop' : 'start'} receiving requests
             </Text>
           </View>
           {updatingStatus ? (
@@ -402,18 +354,9 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
           />
         </View>
       </Card>
-
-      {/* Sign out */}
-      <Button
-        title="Sign Out"
-        variant="outline"
-        onPress={handleLogout}
-        style={styles.signOutBtn}
-      />
     </ScrollView>
   );
 
-  // ─── Loading state ────────────────────────────────────────────────────────
   if (loadingProfile) {
     return (
       <View style={styles.container}>
@@ -439,6 +382,14 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
             onNavigateActiveTrip(incomingTrip.id);
           }
           setIncomingTrip(null);
+        }} 
+      />
+
+      <BottomTabBar 
+        activeTab="home" 
+        onTabChange={(tab) => {
+          if (tab === 'history') onNavigateHistory();
+          if (tab === 'profile') onNavigateProfile();
         }} 
       />
     </View>

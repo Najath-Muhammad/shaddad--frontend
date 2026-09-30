@@ -21,6 +21,7 @@ import { ActiveTripDriverScreen } from '../screens/trip/ActiveTripDriverScreen';
 import { PaymentCheckoutScreen } from '../screens/trip/PaymentCheckoutScreen';
 import { TripReviewRatingScreen } from '../screens/trip/TripReviewRatingScreen';
 import { TripHistoryScreen } from '../screens/trip/TripHistoryScreen';
+import { ProfileScreen } from '../screens/profile/ProfileScreen';
 import { Alert } from 'react-native';
 import { socketClient } from '../api/socket.client';
 
@@ -42,7 +43,9 @@ type ScreenState =
   | 'active-trip-driver'
   | 'payment-checkout'
   | 'trip-review-rating'
-  | 'trip-history';
+  | 'trip-history'
+  | 'customer-profile'
+  | 'driver-profile';
 
 export const RootNavigator: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<ScreenState>('splash');
@@ -132,7 +135,6 @@ export const RootNavigator: React.FC = () => {
 
         {currentScreen === 'customer-home' && (
           <CustomerHomeScreen
-            onLogout={() => setCurrentScreen('role-select')}
             onNavigateCreateTrip={(driverId, vehicleType) => {
               setTripState({ driverId, vehicleType });
               setCurrentScreen('create-trip');
@@ -142,6 +144,7 @@ export const RootNavigator: React.FC = () => {
               setCurrentScreen('active-trip-customer');
             }}
             onNavigateHistory={() => setCurrentScreen('trip-history')}
+            onNavigateProfile={() => setCurrentScreen('customer-profile')}
           />
         )}
 
@@ -199,7 +202,10 @@ export const RootNavigator: React.FC = () => {
         )}
 
         {currentScreen === 'trip-history' && (
-          <TripHistoryScreen onBack={() => setCurrentScreen(activeRole === 'CUSTOMER' ? 'customer-home' : 'driver-home')} />
+          <TripHistoryScreen 
+            onNavigateHome={() => setCurrentScreen(activeRole === 'CUSTOMER' ? 'customer-home' : 'driver-home')}
+            onNavigateProfile={() => setCurrentScreen(activeRole === 'CUSTOMER' ? 'customer-profile' : 'driver-profile')}
+          />
         )}
 
         {currentScreen === 'active-trip-driver' && (
@@ -211,7 +217,6 @@ export const RootNavigator: React.FC = () => {
 
         {currentScreen === 'driver-home' && (
           <DriverHomeScreen
-            onLogout={() => setCurrentScreen('role-select')}
             onNavigateVehicleDetails={() => setCurrentScreen('vehicle-details')}
             onNavigateDocumentUpload={() => setCurrentScreen('document-upload')}
             onNavigateActiveTrip={(tripId) => {
@@ -219,6 +224,7 @@ export const RootNavigator: React.FC = () => {
               setCurrentScreen('active-trip-driver');
             }}
             onNavigateHistory={() => setCurrentScreen('trip-history')}
+            onNavigateProfile={() => setCurrentScreen('driver-profile')}
           />
         )}
 
@@ -228,6 +234,24 @@ export const RootNavigator: React.FC = () => {
 
         {currentScreen === 'document-upload' && (
           <DocumentUploadScreen onBack={() => setCurrentScreen('driver-home')} />
+        )}
+
+        {currentScreen === 'customer-profile' && (
+          <ProfileScreen 
+            role="CUSTOMER"
+            onLogout={() => setCurrentScreen('role-select')}
+            onNavigateHome={() => setCurrentScreen('customer-home')}
+            onNavigateHistory={() => setCurrentScreen('trip-history')}
+          />
+        )}
+
+        {currentScreen === 'driver-profile' && (
+          <ProfileScreen 
+            role="DRIVER"
+            onLogout={() => setCurrentScreen('role-select')}
+            onNavigateHome={() => setCurrentScreen('driver-home')}
+            onNavigateHistory={() => setCurrentScreen('trip-history')}
+          />
         )}
       </View>
     </SafeAreaView>

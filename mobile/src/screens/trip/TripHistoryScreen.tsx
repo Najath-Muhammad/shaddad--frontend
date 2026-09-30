@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Text, FlatList } from 'react-native';
+import { View, StyleSheet, Text, FlatList, ActivityIndicator } from 'react-native';
 import { tripApi } from '../../api/trip.api';
 import { useAuthStore } from '../../store/authStore';
 import { Card } from '../../components/common/Card';
-import { Button } from '../../components/common/Button';
+import { Header } from '../../components/layout/Header';
+import { BottomTabBar } from '../../components/layout/BottomTabBar';
+import { colors } from '../../theme/colors';
 
 interface Props {
-  onBack: () => void;
+  onNavigateHome: () => void;
+  onNavigateProfile: () => void;
 }
 
-export const TripHistoryScreen: React.FC<Props> = ({ onBack }) => {
+export const TripHistoryScreen: React.FC<Props> = ({ onNavigateHome, onNavigateProfile }) => {
   const [trips, setTrips] = useState<any[]>([]);
   const { activeRole } = useAuthStore();
   const [loading, setLoading] = useState(true);
@@ -21,7 +24,6 @@ export const TripHistoryScreen: React.FC<Props> = ({ onBack }) => {
   const fetchHistory = async () => {
     try {
       setLoading(true);
-      // Both customer and driver trip APIs are essentially fetching their own lists
       const res = activeRole === 'CUSTOMER' ? await tripApi.getCustomerTrips() : await tripApi.getDriverTrips();
       setTrips(res.data.data || []);
     } catch (e) {
@@ -33,39 +35,57 @@ export const TripHistoryScreen: React.FC<Props> = ({ onBack }) => {
 
   const renderItem = ({ item }: { item: any }) => (
     <Card style={styles.card}>
-      <Text style={styles.status}>Status: {item.status}</Text>
-      <Text>Pickup: {item.pickupAddress}</Text>
-      <Text>Destination: {item.destinationAddress}</Text>
-      <Text>Date: {new Date(item.createdAt).toLocaleDateString()}</Text>
-      <Text style={styles.price}>Total: SAR {item.totalPrice}</Text>
+      <View style={styles.cardHeader}>
+        <Text style={styles.date}>{new Date(item.createdAt).toLocaleDateString()}</Text>
+        <Text style={styles.status}>{item.status}</Text>
+      </View>
+      <Text style={styles.address}>📍 {item.pickupAddress}</Text>
+      <Text style={styles.address}>🏁 {item.destinationAddress}</Text>
+      <Text style={styles.price}>SAR {item.totalPrice}</Text>
     </Card>
   );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Trip History</Text>
+      <Header title="Trip History" />
+      
       {loading ? (
-        <Text>Loading history...</Text>
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color={colors.secondary} />
+        </View>
       ) : trips.length === 0 ? (
-        <Text>No trips found.</Text>
+        <View style={styles.center}>
+          <Text style={styles.emptyText}>No trips found.</Text>
+        </View>
       ) : (
         <FlatList
           data={trips}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
-          contentContainerStyle={{ paddingBottom: 20 }}
+          contentContainerStyle={styles.listContent}
         />
       )}
-      <Button title="Back to Home" onPress={onBack} variant="outline" style={styles.backButton} />
+
+      <BottomTabBar 
+        activeTab="history" 
+        onTabChange={(tab) => {
+          if (tab === 'home') onNavigateHome();
+          if (tab === 'profile') onNavigateProfile();
+        }} 
+      />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: '#FFF' },
-  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 16 },
-  card: { marginBottom: 12 },
-  status: { fontWeight: 'bold', color: '#007bff', marginBottom: 4 },
-  price: { fontWeight: 'bold', marginTop: 8, color: '#28a745' },
-  backButton: { marginTop: 16 }
+  container: { flex: 1, backgroundColor: colors.surface },
+  listContent: { padding: 16 },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  emptyText: { color: colors.textMuted, fontSize: 16 },
+  card: { marginBottom: 16 },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12, borderBottomWidth: 1, borderBottomColor: colors.surface, paddingBottom: 8 },
+  date: { color: colors.textMuted, fontSize: 12 },
+  status: { fontWeight: '700', color: colors.secondary, fontSize: 12 },
+  address: { color: colors.text, marginBottom: 8, fontSize: 14 },
+  price: { fontWeight: '800', marginTop: 8, color: '#28a745', fontSize: 16, textAlign: 'right' },
 });
