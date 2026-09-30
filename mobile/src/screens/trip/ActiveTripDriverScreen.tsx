@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Text, ScrollView, Alert, Platform } from 'react-native';
+import { View, StyleSheet, Text, ScrollView, Alert, Platform, Modal, TouchableOpacity } from 'react-native';
 import { tripApi } from '../../api/trip.api';
 import { socketClient } from '../../api/socket.client';
 import { Button } from '../../components/common/Button';
@@ -15,6 +15,16 @@ export const ActiveTripDriverScreen: React.FC<Props> = ({ tripId, onTripComplete
   const [trip, setTrip] = useState<any>(null);
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState<string | null>(null);
+
+  const actionNames: Record<string, string> = {
+    GOING_TO_PICKUP: 'Go To Pickup',
+    DRIVER_ARRIVED: 'Arrived at Pickup',
+    CARGO_PICKED_UP: 'Confirm Cargo Picked Up',
+    IN_TRANSIT: 'Start Transit',
+    ARRIVED_AT_DESTINATION: 'Arrived at Destination'
+  };
 
   const fetchTrip = async () => {
     try {
@@ -56,30 +66,15 @@ export const ActiveTripDriverScreen: React.FC<Props> = ({ tripId, onTripComplete
   }, [tripId]);
 
   const handleUpdateStatus = (status: string) => {
-    const actionNames: Record<string, string> = {
-      GOING_TO_PICKUP: 'Go To Pickup',
-      DRIVER_ARRIVED: 'Arrived at Pickup',
-      CARGO_PICKED_UP: 'Confirm Cargo Picked Up',
-      IN_TRANSIT: 'Start Transit',
-      ARRIVED_AT_DESTINATION: 'Arrived at Destination'
-    };
-    
-    const actionName = actionNames[status] || status;
-    
-    if (Platform.OS === 'web') {
-      const confirmed = window.confirm(`Are you sure you want to update the trip status to "${actionName}"?`);
-      if (confirmed) {
-        executeStatusUpdate(status);
-      }
-    } else {
-      Alert.alert(
-        'Confirm Action',
-        `Are you sure you want to update the trip status to "${actionName}"?`,
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Confirm', onPress: () => executeStatusUpdate(status) }
-        ]
-      );
+    setPendingStatus(status);
+    setModalVisible(true);
+  };
+
+  const confirmStatusUpdate = () => {
+    if (pendingStatus) {
+      setModalVisible(false);
+      executeStatusUpdate(pendingStatus);
+      setPendingStatus(null);
     }
   };
 
@@ -155,6 +150,41 @@ export const ActiveTripDriverScreen: React.FC<Props> = ({ tripId, onTripComplete
         <Text>To: {trip.destinationAddress}</Text>
         <Text>Cargo: {trip.cargoType} ({trip.weightKg}kg)</Text>
       </Card>
+
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Confirm Action</Text>
+            </View>
+            
+            <Text style={styles.modalBody}>
+              Are you sure you want to update the trip status to "{pendingStatus ? actionNames[pendingStatus] : ''}"?
+            </Text>
+            
+            <View style={styles.modalActions}>
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.modalButtonCancel]} 
+                onPress={() => setModalVisible(false)}
+              >
+                <Text style={styles.modalButtonTextCancel}>Cancel</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.modalButtonConfirm]} 
+                onPress={confirmStatusUpdate}
+              >
+                <Text style={styles.modalButtonTextConfirm}>Confirm</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 };
@@ -163,5 +193,72 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: '#FFFFFF' },
   card: { marginBottom: 16 },
   title: { fontSize: 18, fontWeight: 'bold', marginBottom: 8 },
-  statusBadge: { fontSize: 16, fontWeight: 'bold', color: '#007bff', marginBottom: 12 }
+  statusBadge: { fontSize: 16, fontWeight: 'bold', color: '#007bff', marginBottom: 12 },
+  
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '85%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalHeader: {
+    marginBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+    paddingBottom: 10,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    textAlign: 'center',
+  },
+  modalBody: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 24,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginHorizontal: 8,
+  },
+  modalButtonCancel: {
+    backgroundColor: '#F5F5F5',
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  modalButtonConfirm: {
+    backgroundColor: '#007bff',
+  },
+  modalButtonTextCancel: {
+    color: '#666',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  modalButtonTextConfirm: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 16,
+  },
 });
