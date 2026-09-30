@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Text, ScrollView, Alert } from 'react-native';
+import { View, StyleSheet, Text, ScrollView, Alert, Platform } from 'react-native';
 import { tripApi } from '../../api/trip.api';
 import { socketClient } from '../../api/socket.client';
 import { Button } from '../../components/common/Button';
@@ -64,27 +64,35 @@ export const ActiveTripDriverScreen: React.FC<Props> = ({ tripId, onTripComplete
       ARRIVED_AT_DESTINATION: 'Arrived at Destination'
     };
     
-    Alert.alert(
-      'Confirm Action',
-      `Are you sure you want to update the trip status to "${actionNames[status] || status}"?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Confirm', 
-          onPress: async () => {
-            try {
-              setLoading(true);
-              await tripApi.updateStatus(tripId, status);
-              await fetchTrip();
-            } catch (error: any) {
-              Alert.alert('Error', error.response?.data?.error?.message || 'Failed to update status');
-            } finally {
-              setLoading(false);
-            }
-          }
-        }
-      ]
-    );
+    const actionName = actionNames[status] || status;
+    
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm(`Are you sure you want to update the trip status to "${actionName}"?`);
+      if (confirmed) {
+        executeStatusUpdate(status);
+      }
+    } else {
+      Alert.alert(
+        'Confirm Action',
+        `Are you sure you want to update the trip status to "${actionName}"?`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Confirm', onPress: () => executeStatusUpdate(status) }
+        ]
+      );
+    }
+  };
+
+  const executeStatusUpdate = async (status: string) => {
+    try {
+      setLoading(true);
+      await tripApi.updateStatus(tripId, status);
+      await fetchTrip();
+    } catch (error: any) {
+      Alert.alert('Error', error.response?.data?.error?.message || 'Failed to update status');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmitProof = async () => {
