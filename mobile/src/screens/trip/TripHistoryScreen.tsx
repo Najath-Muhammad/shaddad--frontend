@@ -41,7 +41,7 @@ export const TripHistoryScreen: React.FC<Props> = ({ onNavigateHome, onNavigateP
       </View>
       <Text style={styles.address}>📍 {item.pickupAddress}</Text>
       <Text style={styles.address}>🏁 {item.destinationAddress}</Text>
-      <Text style={styles.price}>SAR {item.totalPrice}</Text>
+      <View style={styles.cardFooter}><View style={styles.reviewsContainer}>{item.reviews?.find((r: any) => r.reviewerRole === activeRole) && <Text style={styles.reviewText}>You rated: {item.reviews?.find((r: any) => r.reviewerRole === activeRole).rating} star</Text>}{item.reviews?.find((r: any) => r.reviewerRole !== activeRole) && <Text style={styles.reviewText}>They rated: {item.reviews?.find((r: any) => r.reviewerRole !== activeRole).rating} star</Text>}</View><Text style={styles.price}>SAR {item.totalPrice}</Text></View>
     </Card>
   );
 
@@ -87,5 +87,5 @@ const styles = StyleSheet.create({
   date: { color: colors.textMuted, fontSize: 12 },
   status: { fontWeight: '700', color: colors.secondary, fontSize: 12 },
   address: { color: colors.text, marginBottom: 8, fontSize: 14 },
-  price: { fontWeight: '800', marginTop: 8, color: '#28a745', fontSize: 16, textAlign: 'right' },
+  cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 8 }, reviewsContainer: { flex: 1 }, reviewText: { fontSize: 12, color: colors.textMuted }, price: { fontWeight: '800', color: '#28a745', fontSize: 16, textAlign: 'right' },
 });

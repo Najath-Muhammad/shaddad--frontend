@@ -7,9 +7,10 @@ interface Props {
   tripId: string;
   onFinish: () => void;
   title?: string;
+  role?: 'CUSTOMER' | 'DRIVER';
 }
 
-export const TripReviewRatingScreen: React.FC<Props> = ({ tripId, onFinish, title = 'Rate Your Driver' }) => {
+export const TripReviewRatingScreen: React.FC<Props> = ({ tripId, onFinish, title = 'Rate Your Driver', role = 'CUSTOMER' }) => {
   const [rating, setRating] = useState<number>(5);
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
@@ -17,7 +18,7 @@ export const TripReviewRatingScreen: React.FC<Props> = ({ tripId, onFinish, titl
   const handleSubmit = async () => {
     try {
       setLoading(true);
-      await tripApi.submitReview(tripId, rating, comment);
+      await tripApi.submitReview(tripId, rating, comment, role);
       Alert.alert('Thank you', 'Your review has been submitted.');
       onFinish();
     } catch (e: any) {

@@ -219,6 +219,7 @@ export const RootNavigator: React.FC = () => {
         {currentScreen === 'trip-review-rating-driver' && (
           <TripReviewRatingScreen
             title="Rate the Customer"
+            role="DRIVER"
             tripId={tripState.tripId!}
             onFinish={() => setCurrentScreen('driver-home')}
           />

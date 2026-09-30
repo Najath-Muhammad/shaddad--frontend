@@ -37,7 +37,8 @@ export const tripApi = {
   simulatePaymentSuccess: async (tripId: string) => {
     return apiClient.post(`/payments/trips/${tripId}/simulate-success`);
   },
-  submitReview: async (tripId: string, rating: number, comment?: string) => {
-    return apiClient.post(`/customers/trips/${tripId}/review`, { rating, comment });
+  submitReview: async (tripId: string, rating: number, comment?: string, role: 'CUSTOMER' | 'DRIVER' = 'CUSTOMER') => {
+    const basePath = role === 'DRIVER' ? '/drivers' : '/customers';
+    return apiClient.post(`${basePath}/trips/${tripId}/review`, { rating, comment });
   }
 };
