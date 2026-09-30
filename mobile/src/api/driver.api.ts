@@ -77,6 +77,11 @@ export const driverApi = {
     const res = await apiClient.post<ApiResponse<null>>('/drivers/location', { latitude, longitude });
     return res.data;
   },
+
+  withdrawFunds: async (): Promise<ApiResponse<null>> => {
+    const res = await apiClient.post<ApiResponse<null>>('/drivers/withdraw');
+    return res.data;
+  },
 };
 
 export const customerDriverApi = {

@@ -45,7 +45,8 @@ type ScreenState =
   | 'trip-review-rating'
   | 'trip-history'
   | 'customer-profile'
-  | 'driver-profile';
+  | 'driver-profile'
+  | 'trip-review-rating-driver';
 
 export const RootNavigator: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<ScreenState>('splash');
@@ -211,7 +212,15 @@ export const RootNavigator: React.FC = () => {
         {currentScreen === 'active-trip-driver' && (
           <ActiveTripDriverScreen
             tripId={tripState.tripId!}
-            onTripCompleted={() => setCurrentScreen('driver-home')}
+            onTripCompleted={() => setCurrentScreen('trip-review-rating-driver')}
+          />
+        )}
+
+        {currentScreen === 'trip-review-rating-driver' && (
+          <TripReviewRatingScreen
+            title="Rate the Customer"
+            tripId={tripState.tripId!}
+            onFinish={() => setCurrentScreen('driver-home')}
           />
         )}
 

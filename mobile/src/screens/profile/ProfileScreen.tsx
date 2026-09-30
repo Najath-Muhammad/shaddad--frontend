@@ -20,7 +20,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
   role 
 }) => {
   const { user, logout } = useAuth();
-  const [isDarkMode, setIsDarkMode] = useState(false); // Placeholder for actual theme context
+  const { isDarkMode, toggleTheme } = require('../../store/themeStore').useThemeStore();
 
   const handleLogout = async () => {
     await logout();
@@ -59,7 +59,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
             </View>
             <Switch
               value={isDarkMode}
-              onValueChange={setIsDarkMode}
+              onValueChange={toggleTheme}
               trackColor={{ false: colors.border, true: '#22c55e' }}
               thumbColor="#fff"
             />

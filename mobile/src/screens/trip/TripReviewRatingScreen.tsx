@@ -6,9 +6,10 @@ import { tripApi } from '../../api/trip.api';
 interface Props {
   tripId: string;
   onFinish: () => void;
+  title?: string;
 }
 
-export const TripReviewRatingScreen: React.FC<Props> = ({ tripId, onFinish }) => {
+export const TripReviewRatingScreen: React.FC<Props> = ({ tripId, onFinish, title = 'Rate Your Driver' }) => {
   const [rating, setRating] = useState<number>(5);
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
@@ -29,7 +30,7 @@ export const TripReviewRatingScreen: React.FC<Props> = ({ tripId, onFinish }) =>
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Rate Your Driver</Text>
+      <Text style={styles.title}>{title}</Text>
       
       <Text style={styles.label}>Rating (1-5)</Text>
       <View style={styles.ratingRow}>

@@ -21,7 +21,7 @@ import { tripApi } from '../../api/trip.api';
 import { IncomingRequestModal } from './IncomingRequestModal';
 import { ActiveTripCard } from '../../components/trip/ActiveTripCard';
 import { BottomTabBar } from '../../components/layout/BottomTabBar';
-import { showError } from '../../utils/alertUtils';
+import { showError, showSuccess } from '../../utils/alertUtils';
 
 interface DriverHomeScreenProps {
   onNavigateVehicleDetails: () => void;
@@ -175,6 +175,21 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
+  const [withdrawing, setWithdrawing] = useState(false);
+
+  const handleWithdraw = async () => {
+    try {
+      setWithdrawing(true);
+      await driverApi.withdrawFunds();
+      showSuccess('Withdrawal successful');
+      fetchProfile();
+    } catch (error) {
+      showError(error, 'Withdrawal Failed');
+    } finally {
+      setWithdrawing(false);
+    }
+  };
+
   const handleToggleStatus = async (value: boolean) => {
     setUpdatingStatus(true);
     try {
@@ -299,6 +314,14 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
           <Text style={styles.statLabel}>WALLET</Text>
           <Text style={styles.statValue}>{walletDisplay}</Text>
           <Text style={styles.statSub}>Balance</Text>
+          {driverProfile && Number(driverProfile.walletBalance) > 0 && (
+            <Button
+              title="Withdraw"
+              onPress={handleWithdraw}
+              isLoading={withdrawing}
+              style={{ marginTop: 12, minHeight: 36, paddingVertical: 6 }}
+            />
+          )}
         </Card>
         <Card style={styles.statCard}>
           <Text style={styles.statLabel}>RATING</Text>
