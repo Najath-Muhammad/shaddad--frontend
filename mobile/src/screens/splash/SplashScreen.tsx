@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { colors } from '../../theme/colors';
+import { View, Text, StyleSheet, Animated } from 'react-native';
 import { useAuth } from '../../hooks/useAuth';
 
 interface SplashScreenProps {
@@ -10,8 +9,25 @@ interface SplashScreenProps {
 export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
   const { isAuthenticated, isInitializing, loadProfile } = useAuth();
   const hasRun = useRef(false);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.9)).current;
 
   useEffect(() => {
+    // Elegant fade in and scale up animation
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        friction: 4,
+        tension: 10,
+        useNativeDriver: true,
+      })
+    ]).start();
+
     if (isInitializing) return;
     if (hasRun.current) return;
     hasRun.current = true;
@@ -33,21 +49,21 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
       } else {
         setTimeout(() => {
           onFinish('role-select');
-        }, 1000);
+        }, 1500); // Wait a bit longer to show off the beautiful splash screen
       }
     };
 
     void bootstrap();
-  }, [isInitializing, isAuthenticated]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isInitializing, isAuthenticated, fadeAnim, scaleAnim]);
 
 
   return (
     <View style={styles.container}>
-      <View style={styles.logoBadge}>
-        <Text style={styles.logoBadgeText}>SH</Text>
-      </View>
-      <Text style={styles.brandTitle}>SHADDAD</Text>
-      <Text style={styles.tagline}>Saudi Arabia Logistics Marketplace</Text>
+      <Animated.View style={{ opacity: fadeAnim, transform: [{ scale: scaleAnim }], alignItems: 'center' }}>
+        <Text style={styles.brandTitle}>SHADDAD</Text>
+        <View style={styles.divider} />
+        <Text style={styles.tagline}>Saudi Arabia Logistics Marketplace</Text>
+      </Animated.View>
     </View>
   );
 };
@@ -55,39 +71,29 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.primary, // White
+    backgroundColor: '#000000', // Black screen
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
   },
-  logoBadge: {
-    width: 72,
-    height: 72,
-    borderRadius: 20,
-    backgroundColor: colors.secondary, // Black
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-    elevation: 4,
-  },
-  logoBadgeText: {
-    color: colors.primary, // White
-    fontSize: 28,
-    fontWeight: '900',
-    letterSpacing: 2,
-  },
   brandTitle: {
-    fontSize: 26,
+    fontSize: 42,
     fontWeight: '900',
-    color: colors.text,
-    letterSpacing: 1.5,
+    color: '#FFFFFF', // White text
+    letterSpacing: 4,
+  },
+  divider: {
+    height: 2,
+    width: 40,
+    backgroundColor: '#4ade80', // Green accent
+    marginVertical: 12,
   },
   tagline: {
     fontSize: 12,
     fontWeight: '600',
-    color: colors.textMuted,
+    color: '#9CA3AF',
     textTransform: 'uppercase',
-    letterSpacing: 1,
+    letterSpacing: 2,
     marginTop: 6,
   },
 });
