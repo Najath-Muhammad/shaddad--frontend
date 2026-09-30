@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Text, ScrollView, Alert, Platform, Modal, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Text, ScrollView, Platform, Modal, TouchableOpacity } from 'react-native';
 import { tripApi } from '../../api/trip.api';
 import { socketClient } from '../../api/socket.client';
 import { Button } from '../../components/common/Button';
 import { Card } from '../../components/common/Card';
 import { Input } from '../../components/common/Input';
+import { showError, showSuccess } from '../../utils/alertUtils';
 
 interface Props {
   tripId: string;
@@ -33,11 +34,11 @@ export const ActiveTripDriverScreen: React.FC<Props> = ({ tripId, onTripComplete
       if (res.data.data.status === 'COMPLETED') {
         onTripCompleted();
       }
-    } catch (e: any) {
-      console.error('fetchTrip Error:', e.response?.data || e.message);
-      if (e.response?.status === 404) {
-        Alert.alert('Trip not found', 'This trip may have been deleted or expired.');
-        onTripCompleted(); // Navigate away
+    } catch (e) {
+      console.error('fetchTrip Error:', e);
+      showError(e, 'Trip Error');
+      if ((e as any)?.response?.status === 404) {
+        onTripCompleted();
       }
     }
   };
@@ -83,8 +84,8 @@ export const ActiveTripDriverScreen: React.FC<Props> = ({ tripId, onTripComplete
       setLoading(true);
       await tripApi.updateStatus(tripId, status);
       await fetchTrip();
-    } catch (error: any) {
-      Alert.alert('Error', error.response?.data?.error?.message || 'Failed to update status');
+    } catch (error) {
+      showError(error, 'Failed to update status');
     } finally {
       setLoading(false);
     }
@@ -94,10 +95,10 @@ export const ActiveTripDriverScreen: React.FC<Props> = ({ tripId, onTripComplete
     try {
       setLoading(true);
       await tripApi.submitDeliveryProof(tripId, otp, 'dummy-photo-url');
-      Alert.alert('Success', 'Trip Completed!');
+      showSuccess('Trip Completed!');
       onTripCompleted();
-    } catch (error: any) {
-      Alert.alert('Error', error.response?.data?.error?.message || 'Invalid OTP');
+    } catch (error) {
+      showError(error, 'Invalid OTP');
     } finally {
       setLoading(false);
     }

@@ -17,6 +17,7 @@ import { Header } from '../../components/layout/Header';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { driverApi, DriverProfile } from '../../api/driver.api';
+import { showError, showSuccess } from '../../utils/alertUtils';
 
 // Backend server base URL (strip /api/v1 since upload URLs are root-relative)
 const SERVER_BASE = 'http://192.168.220.41:5000';
@@ -163,10 +164,9 @@ export const DocumentUploadScreen: React.FC<DocumentUploadScreenProps> = ({ onBa
       // Also refresh profile from server to get the persisted URL
       void fetchProfile();
 
-      Alert.alert('Success', `${doc.title} uploaded successfully.`);
+      showSuccess(`${doc.title} uploaded successfully.`);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Upload failed. Please try again.';
-      Alert.alert('Upload Failed', message);
+      showError(err, 'Upload Failed');
     } finally {
       setUploadingType(null);
     }

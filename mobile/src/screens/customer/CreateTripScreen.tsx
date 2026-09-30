@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView } from 'react-native';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { tripApi } from '../../api/trip.api';
+import { showError } from '../../utils/alertUtils';
 
 interface Props {
   driverId: string;
@@ -47,13 +48,8 @@ export const CreateTripScreen: React.FC<Props> = ({ driverId, vehicleType, onCal
         destinationLongitude: data.destinationLongitude,
         pricing: breakdown
       });
-    } catch (error: any) {
-      const errData = error.response?.data?.error;
-      let msg = errData?.message || 'Failed to calculate price';
-      if (errData?.details && Array.isArray(errData.details)) {
-        msg += ':\n' + errData.details.map((d: any) => `- ${d.field}: ${d.message}`).join('\n');
-      }
-      Alert.alert('Error', msg);
+    } catch (error) {
+      showError(error, 'Failed to calculate price');
     } finally {
       setLoading(false);
     }

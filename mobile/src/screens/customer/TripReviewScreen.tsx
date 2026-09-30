@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text, Alert, Modal, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Text, Modal, TouchableOpacity } from 'react-native';
 import { Button } from '../../components/common/Button';
 import { Card } from '../../components/common/Card';
 import { tripApi } from '../../api/trip.api';
+import { showError } from '../../utils/alertUtils';
 
 interface Props {
   tripDetails: any;
@@ -36,13 +37,8 @@ export const TripReviewScreen: React.FC<Props> = ({ tripDetails, onConfirm, onCa
       const res = await tripApi.createTrip(tripData);
       setCreatedTripId(res.data.data.id);
       setShowSuccessModal(true);
-    } catch (error: any) {
-      const errData = error.response?.data?.error;
-      let msg = errData?.message || 'Failed to create trip';
-      if (errData?.details && Array.isArray(errData.details)) {
-        msg += ':\n' + errData.details.map((d: any) => `- ${d.field}: ${d.message}`).join('\n');
-      }
-      Alert.alert('Error', msg);
+    } catch (error) {
+      showError(error, 'Failed to create trip');
       setLoading(false);
     }
   };

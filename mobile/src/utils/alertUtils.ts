@@ -1,0 +1,27 @@
+import { Alert } from 'react-native';
+
+export const parseApiError = (error: unknown, fallbackMessage = 'An unexpected error occurred.'): string => {
+  // Check if it's our standard backend error response
+  const apiMessage = (error as any)?.response?.data?.error?.message;
+  if (apiMessage) return apiMessage;
+  
+  // If it's a generic Axios or Network error, map to friendly text
+  const errorMessage = (error as Error)?.message;
+  
+  if (errorMessage?.includes('Network Error')) {
+    return 'Unable to connect to the server. Please check your internet connection.';
+  }
+  if (errorMessage?.includes('500')) {
+    return 'Oops! Something went wrong on our end. Please try again later.';
+  }
+  
+  return errorMessage || fallbackMessage;
+};
+
+export const showError = (error: unknown, title = 'Error', fallback?: string) => {
+  Alert.alert(title, parseApiError(error, fallback));
+};
+
+export const showSuccess = (message: string, title = 'Success') => {
+  Alert.alert(title, message);
+};

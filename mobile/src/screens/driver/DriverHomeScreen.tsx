@@ -21,6 +21,7 @@ import { tripApi } from '../../api/trip.api';
 import { IncomingRequestModal } from './IncomingRequestModal';
 import { ActiveTripCard } from '../../components/trip/ActiveTripCard';
 import { BottomTabBar } from '../../components/layout/BottomTabBar';
+import { showError } from '../../utils/alertUtils';
 
 interface DriverHomeScreenProps {
   onNavigateVehicleDetails: () => void;
@@ -182,9 +183,8 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
         await driverApi.updateLocation(24.7136, 46.6753);
       }
       setIsOnline(value);
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Failed to update availability';
-      Alert.alert('Error', message);
+    } catch (error) {
+      showError(error, 'Failed to update availability');
     } finally {
       setUpdatingStatus(false);
     }
