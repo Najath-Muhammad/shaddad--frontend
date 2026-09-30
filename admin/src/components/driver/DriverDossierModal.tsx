@@ -1,20 +1,45 @@
 import React from 'react';
-import { User, Vehicle } from '../../shared/types/auth.types.js';
+
+// Matches the shape returned by GET /admin/drivers/pending
+interface PendingDriverProfile {
+  id: string;          // This IS the driverProfileId — used for verify API
+  userId: string;
+  user: { fullName: string; phoneNumber: string; email: string | null };
+  nationalIdNumber: string | null;
+  licenseNumber: string | null;
+  verificationStatus: string;
+  nationalIdFrontUrl?: string | null;
+  nationalIdBackUrl?: string | null;
+  licenseUrl?: string | null;
+  profilePhotoUrl?: string | null;
+  vehicle: {
+    vehicleType: string;
+    make: string;
+    model: string;
+    year?: number;
+    plateNumber?: string;
+    isRefrigerated?: boolean;
+    vehiclePhotoUrl?: string | null;
+    registrationUrl?: string | null;
+    insuranceUrl?: string | null;
+  } | null;
+  rejectionReason?: string | null;
+}
 
 interface DriverDossierModalProps {
-  driver: User | null;
+  driver: PendingDriverProfile | null;
   isOpen: boolean;
   onClose: () => void;
-  onAction: (driverId: string, decision: 'APPROVED' | 'REJECTED' | 'SUSPENDED', reason?: string) => void;
+  onAction: (driverProfileId: string, decision: 'APPROVED' | 'REJECTED' | 'SUSPENDED', reason?: string) => void;
 }
 
 export const DriverDossierModal: React.FC<DriverDossierModalProps> = ({ driver, isOpen, onClose, onAction }) => {
   const [reason, setReason] = React.useState('');
 
-  if (!isOpen || !driver || !driver.driverProfile) return null;
+  // Guard: driver.id is the driverProfileId from the backend DTO
+  if (!isOpen || !driver) return null;
 
-  const profile = driver.driverProfile;
-  const vehicle = profile.vehicle;
+  const vehicle = driver.vehicle;
   
   // Construct absolute URL helper
   const getFullUrl = (path: string | undefined | null) => {
@@ -45,39 +70,39 @@ export const DriverDossierModal: React.FC<DriverDossierModalProps> = ({ driver, 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 text-sm">
               <div>
                 <p className="text-neutral-500">Full Name</p>
-                <p className="font-semibold text-neutral-900">{driver.fullName}</p>
+                <p className="font-semibold text-neutral-900">{driver.user.fullName}</p>
               </div>
               <div>
                 <p className="text-neutral-500">Phone Number</p>
-                <p className="font-semibold text-neutral-900">{driver.phoneNumber}</p>
+                <p className="font-semibold text-neutral-900">{driver.user.phoneNumber}</p>
               </div>
               <div>
                 <p className="text-neutral-500">National ID</p>
-                <p className="font-semibold text-neutral-900">{profile.nationalIdNumber}</p>
+                <p className="font-semibold text-neutral-900">{driver.nationalIdNumber || 'N/A'}</p>
               </div>
               <div>
                 <p className="text-neutral-500">License Number</p>
-                <p className="font-semibold text-neutral-900">{profile.licenseNumber}</p>
+                <p className="font-semibold text-neutral-900">{driver.licenseNumber || 'N/A'}</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <p className="text-sm font-medium text-neutral-700">Profile Photo</p>
-                {profile.profilePhotoUrl ? (
-                  <img src={getFullUrl(profile.profilePhotoUrl)} alt="Profile" className="w-full h-48 object-cover rounded-lg border border-neutral-200" />
+                {driver.profilePhotoUrl ? (
+                  <img src={getFullUrl(driver.profilePhotoUrl)} alt="Profile" className="w-full h-48 object-cover rounded-lg border border-neutral-200" />
                 ) : <div className="w-full h-48 bg-neutral-100 rounded-lg flex items-center justify-center text-neutral-400 text-sm">Not uploaded</div>}
               </div>
               <div className="space-y-2">
                 <p className="text-sm font-medium text-neutral-700">National ID (Front)</p>
-                {profile.nationalIdFrontUrl ? (
-                  <img src={getFullUrl(profile.nationalIdFrontUrl)} alt="ID Front" className="w-full h-48 object-cover rounded-lg border border-neutral-200" />
+                {driver.nationalIdFrontUrl ? (
+                  <img src={getFullUrl(driver.nationalIdFrontUrl)} alt="ID Front" className="w-full h-48 object-cover rounded-lg border border-neutral-200" />
                 ) : <div className="w-full h-48 bg-neutral-100 rounded-lg flex items-center justify-center text-neutral-400 text-sm">Not uploaded</div>}
               </div>
               <div className="space-y-2">
                 <p className="text-sm font-medium text-neutral-700">License Document</p>
-                {profile.licenseUrl ? (
-                  <img src={getFullUrl(profile.licenseUrl)} alt="License" className="w-full h-48 object-cover rounded-lg border border-neutral-200" />
+                {driver.licenseUrl ? (
+                  <img src={getFullUrl(driver.licenseUrl)} alt="License" className="w-full h-48 object-cover rounded-lg border border-neutral-200" />
                 ) : <div className="w-full h-48 bg-neutral-100 rounded-lg flex items-center justify-center text-neutral-400 text-sm">Not uploaded</div>}
               </div>
             </div>
@@ -150,7 +175,7 @@ export const DriverDossierModal: React.FC<DriverDossierModalProps> = ({ driver, 
         <div className="border-t border-neutral-100 p-6 bg-neutral-50 rounded-b-2xl flex items-center justify-between">
           <button onClick={() => {
             if (!reason) { alert('Reason required for rejection'); return; }
-            onAction(driver.driverProfile!.id, 'REJECTED', reason)
+            onAction(driver.id, 'REJECTED', reason);
           }} className="px-5 py-2.5 text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors">
             Reject Application
           </button>
@@ -159,7 +184,7 @@ export const DriverDossierModal: React.FC<DriverDossierModalProps> = ({ driver, 
             <button onClick={onClose} className="px-5 py-2.5 text-sm font-medium text-neutral-700 bg-white border border-neutral-300 rounded-lg hover:bg-neutral-50 transition-colors">
               Cancel
             </button>
-            <button onClick={() => onAction(driver.driverProfile!.id, 'APPROVED')} className="px-6 py-2.5 text-sm font-medium text-white bg-black rounded-lg hover:bg-neutral-800 transition-colors shadow-sm">
+            <button onClick={() => onAction(driver.id, 'APPROVED')} className="px-6 py-2.5 text-sm font-medium text-white bg-black rounded-lg hover:bg-neutral-800 transition-colors shadow-sm">
               Approve Driver
             </button>
           </div>

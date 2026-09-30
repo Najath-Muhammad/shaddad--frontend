@@ -1,5 +1,5 @@
-import { adminApiClient } from './client';
-import { ApiResponse, User } from '../../shared/types/auth.types';
+import { apiClient as adminApiClient } from './client';
+import { ApiResponse, User } from '../../../shared/types/auth.types';
 
 export const adminDriverApi = {
   getPendingDrivers: async (): Promise<ApiResponse<User[]>> => {
