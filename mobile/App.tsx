@@ -17,8 +17,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <StripeWrapper>
-        {/* The key forces a complete remount of the navigation tree so components re-evaluate their styles */}
-        <RootNavigator key={isDarkMode ? 'dark' : 'light'} />
+        <RootNavigator />
       </StripeWrapper>
     </SafeAreaProvider>
   );
