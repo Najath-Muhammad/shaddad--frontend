@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, StyleSheet, Text, Alert, TextInput } from 'react-native';
 import { Button } from '../../components/common/Button';
 import { tripApi } from '../../api/trip.api';
+import { useTheme } from '../../theme/useTheme';
 
 interface Props {
   tripId: string;
@@ -11,6 +12,8 @@ interface Props {
 }
 
 export const TripReviewRatingScreen: React.FC<Props> = ({ tripId, onFinish, title = 'Rate Your Driver', role = 'CUSTOMER' }) => {
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
   const [rating, setRating] = useState<number>(5);
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
@@ -61,22 +64,26 @@ export const TripReviewRatingScreen: React.FC<Props> = ({ tripId, onFinish, titl
   );
 };
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, backgroundColor: '#FFF', justifyContent: 'center' },
+const getStyles = (colors: any) => StyleSheet.create({
+  container: { flex: 1, padding: 24, backgroundColor: colors.background, justifyContent: 'center' },
   title: { fontSize: 24, fontWeight: 'bold', marginBottom: 32, textAlign: 'center' },
   label: { fontSize: 16, fontWeight: 'bold', marginBottom: 8 },
   ratingRow: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 24 },
   star: { fontSize: 48 },
-  starSelected: { color: '#FFD700' },
-  starUnselected: { color: '#E0E0E0' },
+  starSelected: { color: colors.warning },
+  starUnselected: { color: colors.border },
   input: {
     borderWidth: 1,
-    borderColor: '#CCC',
+    borderColor: colors.border,
     borderRadius: 8,
     padding: 12,
     height: 100,
     textAlignVertical: 'top',
-    marginBottom: 24
+    marginBottom: 24,
+    color: colors.text,
+    backgroundColor: colors.surface
   }
 });
+
+
 

@@ -86,9 +86,9 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
       reason
         ? `Your account has been suspended: "${reason}". Please contact support.`
         : 'Your account has been suspended. Please contact support.',
-    pillStyle: { backgroundColor: '#FFF7ED', borderColor: '#EA580C', borderWidth: 1 },
-    pillTextStyle: { color: '#EA580C' },
-    cardStyle: { borderLeftWidth: 4, borderLeftColor: '#EA580C' },
+    pillStyle: { backgroundColor: colors.errorBg, borderColor: colors.error, borderWidth: 1 },
+    pillTextStyle: { color: colors.error },
+    cardStyle: { borderLeftWidth: 4, borderLeftColor: colors.error },
   },
 };
 

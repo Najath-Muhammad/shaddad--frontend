@@ -18,10 +18,10 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
   onNavigateHome,
   onNavigateHistory,
   role 
-}) => {const { colors } = useTheme();
+}) => {
+  const { colors, isDarkMode, toggleTheme } = useTheme();
   const styles = getStyles(colors);
   const { user, logout } = useAuth();
-  const { isDarkMode, toggleTheme } = require('../../store/themeStore').useThemeStore();
 
   const handleLogout = async () => {
     await logout();
@@ -185,7 +185,7 @@ const getStyles = (colors: any) => StyleSheet.create({
     letterSpacing: 1,
   },
   section: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.card,
     borderRadius: 16,
     padding: 16,
     marginBottom: 24,
