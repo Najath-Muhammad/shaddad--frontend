@@ -1,7 +1,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { Platform } from 'react-native';
 
-const PROD_API_URL = 'https://your-render-backend.onrender.com/api/v1';
+const PROD_API_URL = 'https://shaddad-api.onrender.com/api/v1';
 
 // For physical devices, use your PC's local network IP
 // Android emulator: 10.0.2.2 | iOS simulator: localhost | Physical device: LAN IP
