@@ -6,6 +6,10 @@ import { DriverVerification } from './pages/DriverVerification';
 import { AdminLayout } from './components/layout/AdminLayout';
 import { ProtectedRoute } from './components/common/ProtectedRoute';
 
+import { Customers } from './pages/Customers';
+import { Drivers } from './pages/Drivers';
+import { Trips } from './pages/Trips';
+
 // Dummy components for other pages for now
 const PlaceholderPage = ({ title }: { title: string }) => (
   <div className="p-6"><h2 className="text-2xl font-bold">{title}</h2><p className="mt-2 text-gray-500">Coming soon.</p></div>
@@ -20,11 +24,11 @@ export const App: React.FC = () => {
         <Route path="/" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="customers" element={<PlaceholderPage title="Customers" />} />
-          <Route path="drivers" element={<PlaceholderPage title="Drivers" />} />
+          <Route path="customers" element={<Customers />} />
+          <Route path="drivers" element={<Drivers />} />
           <Route path="vehicles" element={<PlaceholderPage title="Vehicles" />} />
           <Route path="driver-verification" element={<DriverVerification />} />
-          <Route path="trips" element={<PlaceholderPage title="Trips" />} />
+          <Route path="trips" element={<Trips />} />
           <Route path="live-trips" element={<PlaceholderPage title="Live Trips Map" />} />
           <Route path="pricing" element={<PlaceholderPage title="Pricing Configuration" />} />
           <Route path="payments" element={<PlaceholderPage title="Payments" />} />
