@@ -58,7 +58,7 @@ export const ActiveTripCustomerScreen: React.FC<Props> = ({ tripId, onTripComple
         <Text style={styles.statusBadge}>{trip.status}</Text>
       </Card>
 
-      {trip.status === 'ACCEPTED' && (
+      {(trip.status === 'ACCEPTED' || trip.status === 'PAYMENT_PENDING') && (
         <Button title="Pay Now" onPress={onNavigatePayment} />
       )}
 
