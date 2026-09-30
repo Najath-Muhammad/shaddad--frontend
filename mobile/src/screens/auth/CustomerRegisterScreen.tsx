@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme/useTheme';
 import { FormContainer } from '../../components/common/FormContainer';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
@@ -17,7 +17,8 @@ export const CustomerRegisterScreen: React.FC<CustomerRegisterScreenProps> = ({
   onSuccess,
   onNavigateLogin,
   onBack,
-}) => {
+}) => {const { colors } = useTheme();
+  const styles = getStyles(colors);
   const { registerCustomer, isLoading, error } = useAuth();
 
   const [fullName, setFullName] = useState('');
@@ -138,7 +139,7 @@ export const CustomerRegisterScreen: React.FC<CustomerRegisterScreenProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   backButton: {
     alignSelf: 'flex-start',
     marginBottom: 20,
@@ -202,3 +203,4 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
 });
+

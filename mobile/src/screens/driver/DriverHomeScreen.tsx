@@ -11,7 +11,7 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme/useTheme';
 import { Header } from '../../components/layout/Header';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
@@ -43,7 +43,18 @@ interface StatusConfig {
   cardStyle: ViewStyle;
 }
 
-const STATUS_CONFIG: Record<VerificationStatus, StatusConfig> = {
+
+// ─── Main component ──────────────────────────────────────────────────────────
+
+export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
+  onNavigateVehicleDetails,
+  onNavigateDocumentUpload,
+  onNavigateActiveTrip,
+  onNavigateHistory,
+  onNavigateProfile,
+}) => {const { colors } = useTheme();
+  const styles = getStyles(colors);
+  const STATUS_CONFIG: Record<VerificationStatus, StatusConfig> = {
   PENDING_VERIFICATION: {
     label: 'PENDING REVIEW',
     description: () =>
@@ -81,15 +92,6 @@ const STATUS_CONFIG: Record<VerificationStatus, StatusConfig> = {
   },
 };
 
-// ─── Main component ──────────────────────────────────────────────────────────
-
-export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
-  onNavigateVehicleDetails,
-  onNavigateDocumentUpload,
-  onNavigateActiveTrip,
-  onNavigateHistory,
-  onNavigateProfile,
-}) => {
   const { user } = useAuth();
 
   const [driverProfile, setDriverProfile] = useState<DriverProfile | null>(null);
@@ -289,13 +291,13 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
               Finish these steps to submit your application for review.
             </Text>
 
-            <ChecklistItem label="Add Vehicle Details" done={hasVehicle} onPress={onNavigateVehicleDetails} />
-            <ChecklistItem label="Upload Profile Photo" done={hasProfilePhoto} onPress={onNavigateDocumentUpload} />
-            <ChecklistItem label="Upload ID / Iqama" done={hasNationalId} onPress={onNavigateDocumentUpload} />
-            <ChecklistItem label="Upload Driving License" done={hasLicense} onPress={onNavigateDocumentUpload} />
-            <ChecklistItem label="Upload Vehicle Photo" done={hasVehiclePhoto} onPress={onNavigateDocumentUpload} />
-            <ChecklistItem label="Upload Vehicle Registration" done={hasRegistration} onPress={onNavigateDocumentUpload} />
-            <ChecklistItem label="Upload Vehicle Insurance" done={hasInsurance} onPress={onNavigateDocumentUpload} />
+            <ChecklistItem styles={styles} label="Add Vehicle Details" done={hasVehicle} onPress={onNavigateVehicleDetails} />
+            <ChecklistItem styles={styles} label="Upload Profile Photo" done={hasProfilePhoto} onPress={onNavigateDocumentUpload} />
+            <ChecklistItem styles={styles} label="Upload ID / Iqama" done={hasNationalId} onPress={onNavigateDocumentUpload} />
+            <ChecklistItem styles={styles} label="Upload Driving License" done={hasLicense} onPress={onNavigateDocumentUpload} />
+            <ChecklistItem styles={styles} label="Upload Vehicle Photo" done={hasVehiclePhoto} onPress={onNavigateDocumentUpload} />
+            <ChecklistItem styles={styles} label="Upload Vehicle Registration" done={hasRegistration} onPress={onNavigateDocumentUpload} />
+            <ChecklistItem styles={styles} label="Upload Vehicle Insurance" done={hasInsurance} onPress={onNavigateDocumentUpload} />
           </>
         )}
       </Card>
@@ -422,12 +424,13 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
 // ─── Checklist item component ────────────────────────────────────────────────
 
 interface ChecklistItemProps {
+  styles: any;
   label: string;
   done: boolean;
   onPress: () => void;
 }
 
-const ChecklistItem: React.FC<ChecklistItemProps> = ({ label, done, onPress }) => (
+const ChecklistItem: React.FC<ChecklistItemProps> = ({ label, done, onPress, styles }) => (
   <TouchableOpacity
     style={[styles.checklistItem, done && styles.checklistItemDone]}
     onPress={done ? undefined : onPress}
@@ -448,7 +451,7 @@ const ChecklistItem: React.FC<ChecklistItemProps> = ({ label, done, onPress }) =
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -657,3 +660,5 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
 });
+
+

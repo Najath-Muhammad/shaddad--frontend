@@ -71,3 +71,4 @@ const styles = StyleSheet.create({
   loader: { marginVertical: 20 },
   resultBox: { alignItems: 'center', width: '100%' }
 });
+

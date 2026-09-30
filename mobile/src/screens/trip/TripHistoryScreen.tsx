@@ -5,14 +5,15 @@ import { useAuthStore } from '../../store/authStore';
 import { Card } from '../../components/common/Card';
 import { Header } from '../../components/layout/Header';
 import { BottomTabBar } from '../../components/layout/BottomTabBar';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme/useTheme';
 
 interface Props {
   onNavigateHome: () => void;
   onNavigateProfile: () => void;
 }
 
-export const TripHistoryScreen: React.FC<Props> = ({ onNavigateHome, onNavigateProfile }) => {
+export const TripHistoryScreen: React.FC<Props> = ({ onNavigateHome, onNavigateProfile }) => {const { colors } = useTheme();
+  const styles = getStyles(colors);
   const [trips, setTrips] = useState<any[]>([]);
   const { activeRole } = useAuthStore();
   const [loading, setLoading] = useState(true);
@@ -77,7 +78,7 @@ export const TripHistoryScreen: React.FC<Props> = ({ onNavigateHome, onNavigateP
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.surface },
   listContent: { padding: 16 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
@@ -89,3 +90,4 @@ const styles = StyleSheet.create({
   address: { color: colors.text, marginBottom: 8, fontSize: 14 },
   cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 8 }, reviewsContainer: { flex: 1 }, reviewText: { fontSize: 12, color: colors.textMuted }, price: { fontWeight: '800', color: '#28a745', fontSize: 16, textAlign: 'right' },
 });
+

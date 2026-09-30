@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors } from '../theme/colors';
+import { useTheme } from '../theme/useTheme';
 import { useAuthStore } from '../store/authStore';
 import { SplashScreen } from '../screens/splash/SplashScreen';
 import { RoleSelectionScreen } from '../screens/auth/RoleSelectionScreen';
@@ -48,7 +48,8 @@ type ScreenState =
   | 'driver-profile'
   | 'trip-review-rating-driver';
 
-export const RootNavigator: React.FC = () => {
+export const RootNavigator: React.FC = () => {const { colors } = useTheme();
+  const styles = getStyles(colors);
   const [currentScreen, setCurrentScreen] = useState<ScreenState>('splash');
   const [tripState, setTripState] = useState<{ driverId?: string; vehicleType?: string; tripDetails?: any; tripId?: string }>({});
   const { initialize, isAuthenticated, activeRole } = useAuthStore();
@@ -268,7 +269,7 @@ export const RootNavigator: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: colors.background,
@@ -278,3 +279,4 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
 });
+

@@ -12,7 +12,7 @@ import {
   Modal,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme/useTheme';
 import { Header } from '../../components/layout/Header';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
@@ -88,7 +88,8 @@ const DOCUMENTS: DocConfig[] = [
   },
 ];
 
-export const DocumentUploadScreen: React.FC<DocumentUploadScreenProps> = ({ onBack }) => {
+export const DocumentUploadScreen: React.FC<DocumentUploadScreenProps> = ({ onBack }) => {const { colors } = useTheme();
+  const styles = getStyles(colors);
   const [profile, setProfile] = useState<DriverProfile | null>(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [uploadingType, setUploadingType] = useState<DocType | null>(null);
@@ -302,7 +303,7 @@ export const DocumentUploadScreen: React.FC<DocumentUploadScreenProps> = ({ onBa
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -480,3 +481,4 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
 });
+

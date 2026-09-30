@@ -7,7 +7,7 @@ import {
   StyleSheet,
   TextInputProps,
 } from 'react-native';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme/useTheme';
 
 interface InputProps extends TextInputProps {
   label: string;
@@ -21,7 +21,8 @@ export const Input: React.FC<InputProps> = ({
   isPassword = false,
   style,
   ...props
-}) => {
+}) => {const { colors } = useTheme();
+  const styles = getStyles(colors);
   const [showPassword, setShowPassword] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
 
@@ -58,7 +59,7 @@ export const Input: React.FC<InputProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     marginBottom: 16,
     width: '100%',
@@ -109,3 +110,4 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 });
+

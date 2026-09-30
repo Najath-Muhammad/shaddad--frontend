@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Switch, TouchableOpacity } from 'react-native';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme/useTheme';
 import { Header } from '../../components/layout/Header';
 import { Button } from '../../components/common/Button';
 import { useAuth } from '../../hooks/useAuth';
@@ -18,7 +18,8 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
   onNavigateHome,
   onNavigateHistory,
   role 
-}) => {
+}) => {const { colors } = useTheme();
+  const styles = getStyles(colors);
   const { user, logout } = useAuth();
   const { isDarkMode, toggleTheme } = require('../../store/themeStore').useThemeStore();
 
@@ -132,7 +133,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.surface,
@@ -236,3 +237,4 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
 });
+

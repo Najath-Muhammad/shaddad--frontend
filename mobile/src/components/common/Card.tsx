@@ -1,17 +1,18 @@
 import React from 'react';
 import { View, StyleSheet, ViewStyle, StyleProp } from 'react-native';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme/useTheme';
 
 interface CardProps {
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
 }
 
-export const Card: React.FC<CardProps> = ({ children, style }) => {
+export const Card: React.FC<CardProps> = ({ children, style }) => {const { colors } = useTheme();
+  const styles = getStyles(colors);
   return <View style={[styles.card, style]}>{children}</View>;
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   card: {
     backgroundColor: colors.card,
     borderRadius: 16,
@@ -26,3 +27,4 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
 });
+

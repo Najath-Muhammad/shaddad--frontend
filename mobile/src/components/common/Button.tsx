@@ -8,7 +8,7 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme/useTheme';
 
 interface ButtonProps extends TouchableOpacityProps {
   title: string;
@@ -26,7 +26,8 @@ export const Button: React.FC<ButtonProps> = ({
   style,
   textStyle,
   ...props
-}) => {
+}) => {const { colors } = useTheme();
+  const styles = getStyles(colors);
   const isPrimary = variant === 'primary';
   const isOutline = variant === 'outline';
 
@@ -67,7 +68,7 @@ export const Button: React.FC<ButtonProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   base: {
     height: 52,
     borderRadius: 12,
@@ -111,3 +112,4 @@ const styles = StyleSheet.create({
     color: colors.disabledText,
   },
 });
+

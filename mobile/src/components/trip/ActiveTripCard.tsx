@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Card } from '../common/Card';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme/useTheme';
 
 interface ActiveTripCardProps {
   trip: any;
@@ -9,7 +9,8 @@ interface ActiveTripCardProps {
   onPress?: () => void;
 }
 
-export const ActiveTripCard: React.FC<ActiveTripCardProps> = ({ trip, role, onPress }) => {
+export const ActiveTripCard: React.FC<ActiveTripCardProps> = ({ trip, role, onPress }) => {const { colors } = useTheme();
+  const styles = getStyles(colors);
   if (!trip) return null;
 
   const isCustomer = role === 'CUSTOMER';
@@ -58,7 +59,7 @@ export const ActiveTripCard: React.FC<ActiveTripCardProps> = ({ trip, role, onPr
   return CardContent;
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   card: {
     backgroundColor: '#e0f2fe',
     borderColor: '#bae6fd',
@@ -125,3 +126,4 @@ const styles = StyleSheet.create({
     color: '#475569',
   }
 });
+

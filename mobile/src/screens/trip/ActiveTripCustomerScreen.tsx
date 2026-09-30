@@ -96,3 +96,4 @@ const styles = StyleSheet.create({
   statusBadge: { fontSize: 16, fontWeight: 'bold', color: '#007bff' },
   otp: { fontSize: 32, fontWeight: 'bold', letterSpacing: 5, color: 'green', marginVertical: 8 }
 });
+

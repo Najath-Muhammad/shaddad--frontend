@@ -10,3 +10,4 @@ export const StripeWrapper: React.FC<{children: React.ReactElement}> = ({ childr
     </StripeProvider>
   );
 };
+

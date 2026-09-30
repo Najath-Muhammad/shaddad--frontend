@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme/useTheme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export type TabState = 'home' | 'history' | 'profile';
@@ -10,7 +10,8 @@ interface BottomTabBarProps {
   onTabChange: (tab: TabState) => void;
 }
 
-export const BottomTabBar: React.FC<BottomTabBarProps> = ({ activeTab, onTabChange }) => {
+export const BottomTabBar: React.FC<BottomTabBarProps> = ({ activeTab, onTabChange }) => {const { colors } = useTheme();
+  const styles = getStyles(colors);
   const insets = useSafeAreaInsets();
 
   const tabs = [
@@ -41,7 +42,7 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({ activeTab, onTabChan
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flexDirection: 'row',
     backgroundColor: '#FFFFFF',
@@ -84,3 +85,4 @@ const styles = StyleSheet.create({
     color: colors.secondary,
   },
 });
+

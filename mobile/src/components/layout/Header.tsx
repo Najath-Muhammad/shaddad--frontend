@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme/useTheme';
 
 interface HeaderProps {
   title: string;
@@ -16,7 +16,8 @@ export const Header: React.FC<HeaderProps> = ({
   showBack = false,
   onBack,
   rightAction,
-}) => {
+}) => {const { colors } = useTheme();
+  const styles = getStyles(colors);
   return (
     <View style={styles.container}>
       <View style={styles.leftRow}>
@@ -39,7 +40,7 @@ export const Header: React.FC<HeaderProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     height: 60,
     flexDirection: 'row',
@@ -78,3 +79,4 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
 });
+

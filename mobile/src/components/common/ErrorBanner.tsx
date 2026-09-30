@@ -1,12 +1,13 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme/useTheme';
 
 interface ErrorBannerProps {
   message?: string | null;
 }
 
-export const ErrorBanner: React.FC<ErrorBannerProps> = ({ message }) => {
+export const ErrorBanner: React.FC<ErrorBannerProps> = ({ message }) => {const { colors } = useTheme();
+  const styles = getStyles(colors);
   if (!message) return null;
 
   return (
@@ -16,7 +17,7 @@ export const ErrorBanner: React.FC<ErrorBannerProps> = ({ message }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     backgroundColor: colors.errorBg,
     borderColor: colors.error,
@@ -34,3 +35,4 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
 });
+

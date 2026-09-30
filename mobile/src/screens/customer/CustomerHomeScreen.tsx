@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, FlatList, ActivityIndicator, TouchableOpacity } from 'react-native';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme/useTheme';
 import { Header } from '../../components/layout/Header';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
@@ -22,7 +22,8 @@ export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
   onNavigateActiveTrip,
   onNavigateHistory,
   onNavigateProfile,
-}) => {
+}) => {const { colors } = useTheme();
+  const styles = getStyles(colors);
   const { user } = useAuth();
   const [nearbyDrivers, setNearbyDrivers] = useState<any[]>([]);
   const [loadingDrivers, setLoadingDrivers] = useState(true);
@@ -157,7 +158,7 @@ export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.surface,
@@ -314,3 +315,4 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 });
+

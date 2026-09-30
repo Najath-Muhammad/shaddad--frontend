@@ -6,7 +6,7 @@ import {
   StyleSheet,
   ViewStyle,
 } from 'react-native';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme/useTheme';
 
 interface FormContainerProps {
   children: React.ReactNode;
@@ -16,7 +16,8 @@ interface FormContainerProps {
 export const FormContainer: React.FC<FormContainerProps> = ({
   children,
   contentContainerStyle,
-}) => {
+}) => {const { colors } = useTheme();
+  const styles = getStyles(colors);
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -33,7 +34,7 @@ export const FormContainer: React.FC<FormContainerProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -46,3 +47,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
+

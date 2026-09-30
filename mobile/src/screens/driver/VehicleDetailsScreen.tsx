@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, Alert, TouchableOpacity, Text } from 'react-native';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme/useTheme';
 import { Header } from '../../components/layout/Header';
 import { Card } from '../../components/common/Card';
 import { Input } from '../../components/common/Input';
@@ -92,7 +92,8 @@ interface VehicleDetailsScreenProps {
   onBack: () => void;
 }
 
-export const VehicleDetailsScreen: React.FC<VehicleDetailsScreenProps> = ({ onBack }) => {
+export const VehicleDetailsScreen: React.FC<VehicleDetailsScreenProps> = ({ onBack }) => {const { colors } = useTheme();
+  const styles = getStyles(colors);
   const [vehicleType, setVehicleType] = useState<VehicleTypeValue>('DYNA');
   const [make, setMake] = useState('');
   const [model, setModel] = useState('');
@@ -280,7 +281,7 @@ export const VehicleDetailsScreen: React.FC<VehicleDetailsScreenProps> = ({ onBa
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -435,3 +436,4 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
 });
+

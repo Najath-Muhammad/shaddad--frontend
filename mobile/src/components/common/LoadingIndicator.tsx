@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, ActivityIndicator, Text, StyleSheet } from 'react-native';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme/useTheme';
 
 interface LoadingIndicatorProps {
   message?: string;
@@ -8,7 +8,8 @@ interface LoadingIndicatorProps {
 
 export const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({
   message = 'Loading...',
-}) => {
+}) => {const { colors } = useTheme();
+  const styles = getStyles(colors);
   return (
     <View style={styles.container}>
       <ActivityIndicator size="large" color={colors.secondary} />
@@ -17,7 +18,7 @@ export const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
@@ -32,3 +33,4 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 });
+

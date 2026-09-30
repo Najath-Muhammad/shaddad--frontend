@@ -61,3 +61,4 @@ const styles = StyleSheet.create({
   buttons: { flexDirection: 'row', gap: 10, marginTop: 10 },
   btn: { flex: 1 }
 });
+

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme/useTheme';
 import { FormContainer } from '../../components/common/FormContainer';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
@@ -17,7 +17,8 @@ export const CustomerLoginScreen: React.FC<CustomerLoginScreenProps> = ({
   onSuccess,
   onNavigateRegister,
   onBack,
-}) => {
+}) => {const { colors } = useTheme();
+  const styles = getStyles(colors);
   const { login, isLoading, error } = useAuth();
 
   const [identifier, setIdentifier] = useState('+966551234567');
@@ -102,7 +103,7 @@ export const CustomerLoginScreen: React.FC<CustomerLoginScreenProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   backButton: {
     alignSelf: 'flex-start',
     marginBottom: 20,
@@ -166,3 +167,4 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
 });
+

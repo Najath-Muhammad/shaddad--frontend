@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme/useTheme';
 import { Button } from '../../components/common/Button';
 import { Card } from '../../components/common/Card';
 
@@ -12,7 +12,8 @@ interface RoleSelectionScreenProps {
 export const RoleSelectionScreen: React.FC<RoleSelectionScreenProps> = ({
   onSelectCustomer,
   onSelectDriver,
-}) => {
+}) => {const { colors } = useTheme();
+  const styles = getStyles(colors);
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -78,7 +79,7 @@ export const RoleSelectionScreen: React.FC<RoleSelectionScreenProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -172,3 +173,4 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 });
+
