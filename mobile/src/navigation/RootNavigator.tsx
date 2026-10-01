@@ -15,7 +15,6 @@ import { VehicleDetailsScreen } from '../screens/driver/VehicleDetailsScreen';
 import { DocumentUploadScreen } from '../screens/driver/DocumentUploadScreen';
 import { CreateTripScreen } from '../screens/customer/CreateTripScreen';
 import { TripReviewScreen } from '../screens/customer/TripReviewScreen';
-import { WaitingForDriverScreen } from '../screens/customer/WaitingForDriverScreen';
 import { ActiveTripCustomerScreen } from '../screens/trip/ActiveTripCustomerScreen';
 import { ActiveTripDriverScreen } from '../screens/trip/ActiveTripDriverScreen';
 import { PaymentCheckoutScreen } from '../screens/trip/PaymentCheckoutScreen';
@@ -167,18 +166,13 @@ export const RootNavigator: React.FC = () => {const { colors } = useTheme();
             tripDetails={tripState.tripDetails}
             onConfirm={(tripId) => {
               setTripState({ ...tripState, tripId });
-              setCurrentScreen('waiting-driver');
+              setCurrentScreen('customer-home');
             }}
             onCancel={() => setCurrentScreen('create-trip')}
           />
         )}
 
-        {currentScreen === 'waiting-driver' && (
-          <WaitingForDriverScreen
-            tripId={tripState.tripId!}
-            onFinish={() => setCurrentScreen('active-trip-customer')}
-          />
-        )}
+
 
         {currentScreen === 'active-trip-customer' && (
           <ActiveTripCustomerScreen

@@ -37,8 +37,9 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "YOUR_EAS_PROJECT_ID"
+        "projectId": "8344f26f-f551-4145-afdd-74d55421a8ef"
       }
-    }
+    },
+    "owner": "najathnaju"
   }
 }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text, Modal, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Text } from 'react-native';
 import { Button } from '../../components/common/Button';
 import { Card } from '../../components/common/Card';
 import { tripApi } from '../../api/trip.api';
@@ -19,8 +19,6 @@ export const TripReviewScreen: React.FC<Props> = ({ tripDetails, onConfirm, onCa
   } = tripDetails;
 
   const [loading, setLoading] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [createdTripId, setCreatedTripId] = useState<string>('');
 
   const handleConfirm = async () => {
     try {
@@ -35,8 +33,7 @@ export const TripReviewScreen: React.FC<Props> = ({ tripDetails, onConfirm, onCa
       };
 
       const res = await tripApi.createTrip(tripData);
-      setCreatedTripId(res.data.data.id);
-      setShowSuccessModal(true);
+      onConfirm(res.data.data.id);
     } catch (error) {
       showError(error, 'Failed to create trip');
       setLoading(false);
@@ -62,31 +59,6 @@ export const TripReviewScreen: React.FC<Props> = ({ tripDetails, onConfirm, onCa
 
       <Button title="Confirm & Request" onPress={handleConfirm} isLoading={loading} />
       <Button title="Cancel" onPress={onCancel} variant="outline" style={{ marginTop: 12 }} />
-
-      <Modal
-        visible={showSuccessModal}
-        transparent={true}
-        animationType="fade"
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.successIconContainer}>
-              <Text style={styles.successIcon}>✨</Text>
-            </View>
-            <Text style={styles.modalTitle}>Request Sent!</Text>
-            <Text style={styles.modalText}>
-              Your trip request has been successfully sent to the driver. 
-              You can now request other nearby drivers if you'd like.
-            </Text>
-            <TouchableOpacity 
-              style={styles.modalButton} 
-              onPress={() => onConfirm(createdTripId)}
-            >
-              <Text style={styles.modalButtonText}>Back to Home</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
     </View>
   );
 };
@@ -95,62 +67,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: '#FFFFFF' },
   card: { marginBottom: 16 },
   title: { fontSize: 18, fontWeight: 'bold', marginBottom: 8 },
-  total: { fontSize: 18, fontWeight: 'bold', marginTop: 12, color: '#000' },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContent: {
-    width: '85%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    padding: 24,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-    elevation: 10,
-  },
-  successIconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#f0fdf4',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  successIcon: {
-    fontSize: 32,
-  },
-  modalTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#111827',
-    marginBottom: 8,
-  },
-  modalText: {
-    fontSize: 14,
-    color: '#6b7280',
-    textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: 24,
-  },
-  modalButton: {
-    backgroundColor: '#10b981',
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    width: '100%',
-    alignItems: 'center',
-  },
-  modalButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
-  }
+  total: { fontSize: 18, fontWeight: 'bold', marginTop: 12, color: '#000' }
 });
 

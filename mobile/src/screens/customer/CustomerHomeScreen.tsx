@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, FlatList, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, FlatList, ActivityIndicator, TouchableOpacity, Modal } from 'react-native';
 import { useTheme } from '../../theme/useTheme';
 import { Header } from '../../components/layout/Header';
 import { Card } from '../../components/common/Card';
@@ -28,16 +28,41 @@ export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
   const [nearbyDrivers, setNearbyDrivers] = useState<any[]>([]);
   const [loadingDrivers, setLoadingDrivers] = useState(true);
   const [activeTrip, setActiveTrip] = useState<any>(null);
+  const [pendingTrip, setPendingTrip] = useState<any>(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
 
   const fetchActiveTrip = async () => {
     try {
       const response = await tripApi.getCustomerTrips();
       if (response.data?.data && response.data.data.length > 0) {
         const mostRecentTrip = response.data.data[0];
-        if (!['PENDING_DRIVER_RESPONSE', 'REJECTED', 'EXPIRED', 'COMPLETED'].includes(mostRecentTrip.status)) {
+        
+        if (mostRecentTrip.status === 'PENDING_DRIVER_RESPONSE') {
+          setPendingTrip(mostRecentTrip);
+          setActiveTrip(null);
+        } else if (['REJECTED', 'EXPIRED'].includes(mostRecentTrip.status)) {
+          // If we were previously pending this trip, show the alert
+          if (pendingTrip && pendingTrip.id === mostRecentTrip.id) {
+            setModalTitle(mostRecentTrip.status === 'REJECTED' ? 'Request Declined' : 'Request Timeout');
+            setModalMessage(mostRecentTrip.status === 'REJECTED' 
+              ? 'The driver declined your request. Please select a different driver.'
+              : 'The driver did not respond in time. Please try another driver.');
+            setModalVisible(true);
+          }
+          setPendingTrip(null);
+          setActiveTrip(null);
+        } else if (!['COMPLETED', 'CANCELED'].includes(mostRecentTrip.status)) {
+          // Active trip (ACCEPTED, DRIVER_ON_THE_WAY, etc.)
+          if (pendingTrip && pendingTrip.id === mostRecentTrip.id) {
+            onNavigateActiveTrip(mostRecentTrip.id);
+          }
           setActiveTrip(mostRecentTrip);
+          setPendingTrip(null);
         } else {
           setActiveTrip(null);
+          setPendingTrip(null);
         }
       }
     } catch (error) {
@@ -61,9 +86,9 @@ export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
     fetchNearbyDrivers();
     fetchActiveTrip();
     
-    const intervalId = setInterval(fetchActiveTrip, 10000);
+    const intervalId = setInterval(fetchActiveTrip, pendingTrip ? 3000 : 10000);
     return () => clearInterval(intervalId);
-  }, []);
+  }, [pendingTrip]);
 
   return (
     <View style={styles.container}>
@@ -146,6 +171,21 @@ export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
           )}
         </View>
       </ScrollView>
+
+      <Modal visible={modalVisible} transparent={true} animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>{modalTitle}</Text>
+            <Text style={styles.modalText}>{modalMessage}</Text>
+            <TouchableOpacity 
+              style={styles.modalButton} 
+              onPress={() => setModalVisible(false)}
+            >
+              <Text style={styles.modalButtonText}>Okay</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       <BottomTabBar 
         activeTab="home" 
@@ -314,5 +354,67 @@ const getStyles = (colors: any) => StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
   },
+  pendingCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 32,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+    marginBottom: 24,
+  },
+  pendingTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.text,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  pendingText: {
+    fontSize: 14,
+    color: colors.textMuted,
+    textAlign: 'center',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '80%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 24,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#111827',
+    marginBottom: 12,
+  },
+  modalText: {
+    fontSize: 14,
+    color: '#6b7280',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  modalButton: {
+    backgroundColor: '#10b981',
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 12,
+  },
+  modalButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+  },
 });
+
+
 
