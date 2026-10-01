@@ -1,0 +1,6 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='1024' height='1024' viewBox='0 0 1024 1024'>
+  <rect width='1024' height='1024' fill='#0f172a'/>
+  <path d='M312 600l200-300 200 300' stroke='#4ade80' stroke-width='60' fill='none' stroke-linecap='round' stroke-linejoin='round'/>
+  <path d='M412 600l100-150 100 150' stroke='#38bdf8' stroke-width='60' fill='none' stroke-linecap='round' stroke-linejoin='round'/>
+  <path d='M312 700h400' stroke='#f8fafc' stroke-width='60' stroke-linecap='round'/>
+</svg>
