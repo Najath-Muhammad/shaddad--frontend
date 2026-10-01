@@ -8,8 +8,8 @@ export const parseApiError = (error: unknown, fallbackMessage = 'An unexpected e
   // If it's a generic Axios or Network error, map to friendly text
   const errorMessage = (error as Error)?.message;
   
-  if (errorMessage?.includes('Network Error')) {
-    return 'Unable to connect to the server. Please check your internet connection.';
+  if (errorMessage?.includes('Network Error') || errorMessage?.includes('timeout')) {
+    return 'Server is warming up, please wait a moment and try again. (This can take up to 30 seconds on first launch)';
   }
   if (errorMessage?.includes('500')) {
     return 'Oops! Something went wrong on our end. Please try again later.';
@@ -25,3 +25,4 @@ export const showError = (error: unknown, title = 'Error', fallback?: string) =>
 export const showSuccess = (message: string, title = 'Success') => {
   Alert.alert(title, message);
 };
+

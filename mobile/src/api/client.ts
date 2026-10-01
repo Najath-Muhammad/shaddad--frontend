@@ -40,7 +40,7 @@ export const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 15000,
+  timeout: 60000, // 60s to handle Render cold start
 });
 
 // Request interceptor: injects token
@@ -138,3 +138,4 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
