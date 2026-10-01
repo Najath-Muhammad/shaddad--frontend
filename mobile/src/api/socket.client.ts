@@ -62,6 +62,14 @@ class SocketClient {
     this.socket?.off('notification');
   }
 
+  onUserBlocked(callback: (data: { reason: string }) => void) {
+    this.socket?.on('user_blocked', callback);
+  }
+
+  offUserBlocked() {
+    this.socket?.off('user_blocked');
+  }
+
   onTripCanceled(callback: (data: { tripId: string, reason: string }) => void) {
     this.socket?.on('trip_canceled', callback);
   }

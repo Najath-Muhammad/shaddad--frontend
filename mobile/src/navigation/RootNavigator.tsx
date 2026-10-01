@@ -51,7 +51,7 @@ export const RootNavigator: React.FC = () => {const { colors } = useTheme();
   const styles = getStyles(colors);
   const [currentScreen, setCurrentScreen] = useState<ScreenState>('splash');
   const [tripState, setTripState] = useState<{ driverId?: string; vehicleType?: string; tripDetails?: any; tripId?: string }>({});
-  const { initialize, isAuthenticated, activeRole } = useAuthStore();
+  const { initialize, isAuthenticated, activeRole, clearAuth } = useAuthStore();
 
   useEffect(() => {
     void initialize();
