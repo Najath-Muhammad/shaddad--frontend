@@ -3,11 +3,14 @@ import { tokenManager } from './client';
 import { Platform } from 'react-native';
 
 const LOCAL_IP = '192.168.220.41';
-const SOCKET_URL = Platform.select({
-  android: __DEV__ ? `http://${LOCAL_IP}:5000` : 'https://your-production-api.com',
-  ios: __DEV__ ? `http://${LOCAL_IP}:5000` : 'https://your-production-api.com',
-  default: 'http://localhost:5000',
-});
+const PROD_SOCKET_URL = 'https://shaddad-api.onrender.com';
+const SOCKET_URL = __DEV__ 
+  ? Platform.select({
+      android: `http://${LOCAL_IP}:5000`,
+      ios: `http://${LOCAL_IP}:5000`,
+      default: 'http://localhost:5000',
+    }) 
+  : PROD_SOCKET_URL;
 
 class SocketClient {
   private socket: Socket | null = null;
@@ -69,4 +72,5 @@ class SocketClient {
 }
 
 export const socketClient = new SocketClient();
+
 

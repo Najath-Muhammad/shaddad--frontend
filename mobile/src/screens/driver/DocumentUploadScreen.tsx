@@ -20,7 +20,8 @@ import { driverApi, DriverProfile } from '../../api/driver.api';
 import { showError, showSuccess } from '../../utils/alertUtils';
 
 // Backend server base URL (strip /api/v1 since upload URLs are root-relative)
-const SERVER_BASE = 'http://192.168.220.41:5000';
+import { apiClient } from '../../api/client';
+const SERVER_BASE = apiClient.defaults.baseURL?.replace('/api/v1', '') || 'https://shaddad-api.onrender.com';
 
 interface DocumentUploadScreenProps {
   onBack: () => void;
