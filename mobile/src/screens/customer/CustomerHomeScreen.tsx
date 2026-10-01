@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, FlatList, ActivityIndicator, TouchableOpacity, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, FlatList, ActivityIndicator, TouchableOpacity, Modal, TextInput } from 'react-native';
 import { useTheme } from '../../theme/useTheme';
 import { Header } from '../../components/layout/Header';
 import { Card } from '../../components/common/Card';
@@ -32,6 +32,8 @@ export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
   const [modalVisible, setModalVisible] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [modalMessage, setModalMessage] = useState('');
+  const [cancelModalVisible, setCancelModalVisible] = useState(false);
+  const [cancelReason, setCancelReason] = useState('');
 
   const fetchActiveTrip = async () => {
     try {
@@ -73,8 +75,10 @@ export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
   const handleCancelTrip = async () => {
     if (!pendingTrip) return;
     try {
-      await tripApi.cancelTrip(pendingTrip.id, 'Customer requested cancellation');
+      await tripApi.cancelTrip(pendingTrip.id, cancelReason || 'Customer requested cancellation');
       setPendingTrip(null);
+      setCancelModalVisible(false);
+      setCancelReason('');
       fetchNearbyDrivers();
     } catch (error) {
       console.error('Failed to cancel trip:', error);
@@ -143,7 +147,7 @@ export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
             <Text style={styles.pendingText}>Waiting for the driver to accept your request.</Text>
             <Button 
               title="Cancel Request" 
-              onPress={handleCancelTrip} 
+              onPress={() => setCancelModalVisible(true)} 
               variant="outline" 
               style={{ marginTop: 24, borderColor: '#ef4444' }} 
               textStyle={{ color: '#ef4444' }}
@@ -211,6 +215,36 @@ export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
             >
               <Text style={styles.modalButtonText}>Okay</Text>
             </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      
+      <Modal visible={cancelModalVisible} transparent={true} animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Cancel Request</Text>
+            <Text style={styles.modalText}>Please provide a reason for cancellation:</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Reason (optional)"
+              value={cancelReason}
+              onChangeText={setCancelReason}
+              multiline
+            />
+            <View style={{ flexDirection: 'row', gap: 12, marginTop: 16, width: '100%' }}>
+              <Button
+                title="Close"
+                onPress={() => setCancelModalVisible(false)}
+                variant="outline"
+                style={{ flex: 1 }}
+              />
+              <Button
+                title="Confirm"
+                onPress={handleCancelTrip}
+                style={{ flex: 1, backgroundColor: '#ef4444', borderColor: '#ef4444' }}
+              />
+            </View>
           </View>
         </View>
       </Modal>
@@ -441,6 +475,15 @@ const getStyles = (colors: any) => StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '700',
+  },
+  input: {
+    width: '100%',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderRadius: 8,
+    padding: 12,
+    minHeight: 80,
+    textAlignVertical: 'top',
   },
 });
 
