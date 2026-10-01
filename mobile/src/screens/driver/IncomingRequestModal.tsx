@@ -40,14 +40,22 @@ export const IncomingRequestModal: React.FC<Props> = ({ trip, visible, cancelRea
           <Text style={styles.text}>Cargo: {trip.cargoType} ({trip.weightKg}kg)</Text>
           <Text style={styles.earnings}>Earnings: {trip.driverEarnings} SAR</Text>
           
-          <View style={styles.buttons}>
-            {loading ? <ActivityIndicator /> : (
-              <>
-                <Button title="Reject" onPress={() => handleRespond(false)} variant="outline" style={styles.btn} />
-                <Button title="Accept" onPress={() => handleRespond(true)} style={styles.btn} />
-              </>
-            )}
-          </View>
+          {cancelReason ? (
+            <View style={{ marginTop: 16, padding: 12, backgroundColor: '#fef2f2', borderRadius: 8 }}>
+              <Text style={{ color: '#ef4444', fontWeight: 'bold', marginBottom: 4 }}>Trip Canceled by Customer</Text>
+              <Text style={{ color: '#ef4444' }}>Reason: {cancelReason}</Text>
+              <Button title="Dismiss" onPress={onDismiss || (() => {})} style={{ marginTop: 12, backgroundColor: '#ef4444', borderColor: '#ef4444' }} />
+            </View>
+          ) : (
+            <View style={styles.buttons}>
+              {loading ? <ActivityIndicator /> : (
+                <>
+                  <Button title="Reject" onPress={() => handleRespond(false)} variant="outline" style={styles.btn} />
+                  <Button title="Accept" onPress={() => handleRespond(true)} style={styles.btn} />
+                </>
+              )}
+            </View>
+          )}
         </Card>
       </View>
     </Modal>
@@ -63,5 +71,6 @@ const styles = StyleSheet.create({
   buttons: { flexDirection: 'row', gap: 10, marginTop: 10 },
   btn: { flex: 1 }
 });
+
 
 
