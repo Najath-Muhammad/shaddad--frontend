@@ -107,12 +107,7 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
   useEffect(() => {
     socketClient.onTripCanceled((data: any) => {
       setCancelReason(data.reason || 'No reason provided');
-      // Fallback alert for iOS or if modal is not open
-      Alert.alert(
-        'Request Canceled',
-        `The customer canceled the trip request.\nReason: ${data.reason || 'No reason provided'}`,
-        [{ text: 'OK', onPress: () => { setIncomingTrip(null); setCancelReason(null); } }]
-      );
+      
     });
     return () => {
       socketClient.offTripCanceled();
@@ -695,6 +690,7 @@ const getStyles = (colors: any) => StyleSheet.create({
     marginTop: 4,
   },
 });
+
 
 
 

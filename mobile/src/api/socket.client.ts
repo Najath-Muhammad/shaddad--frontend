@@ -6,7 +6,7 @@ const LOCAL_IP = '192.168.220.41';
 const SOCKET_URL = Platform.select({
   android: __DEV__ ? `http://${LOCAL_IP}:5000` : 'https://your-production-api.com',
   ios: __DEV__ ? `http://${LOCAL_IP}:5000` : 'https://your-production-api.com',
-  default: `http://${LOCAL_IP}:5000`,
+  default: 'http://localhost:5000',
 });
 
 class SocketClient {
@@ -69,3 +69,4 @@ class SocketClient {
 }
 
 export const socketClient = new SocketClient();
+
