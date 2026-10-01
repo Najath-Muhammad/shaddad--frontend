@@ -81,14 +81,16 @@ export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
       setLoadingDrivers(false);
     }
   };
-
   useEffect(() => {
     fetchNearbyDrivers();
     fetchActiveTrip();
-    
-    const intervalId = setInterval(fetchActiveTrip, pendingTrip ? 3000 : 10000);
+  }, []);
+
+  useEffect(() => {
+    const isPending = !!pendingTrip;
+    const intervalId = setInterval(fetchActiveTrip, isPending ? 3000 : 10000);
     return () => clearInterval(intervalId);
-  }, [pendingTrip]);
+  }, [!!pendingTrip]);
 
   return (
     <View style={styles.container}>
@@ -415,6 +417,7 @@ const getStyles = (colors: any) => StyleSheet.create({
     fontWeight: '700',
   },
 });
+
 
 
 
