@@ -70,6 +70,17 @@ export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
     }
   };
 
+  const handleCancelTrip = async () => {
+    if (!pendingTrip) return;
+    try {
+      await tripApi.cancelTrip(pendingTrip.id, 'Customer requested cancellation');
+      setPendingTrip(null);
+      fetchNearbyDrivers();
+    } catch (error) {
+      console.error('Failed to cancel trip:', error);
+    }
+  };
+
   const fetchNearbyDrivers = async () => {
     setLoadingDrivers(true);
     try {
@@ -124,7 +135,21 @@ export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
           </TouchableOpacity>
         </View>
 
-        {/* Nearby Drivers */}
+                {/* Nearby Drivers or Pending State */}
+        {pendingTrip ? (
+          <View style={styles.pendingCard}>
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text style={styles.pendingTitle}>Requesting Driver...</Text>
+            <Text style={styles.pendingText}>Waiting for the driver to accept your request.</Text>
+            <Button 
+              title="Cancel Request" 
+              onPress={handleCancelTrip} 
+              variant="outline" 
+              style={{ marginTop: 24, borderColor: '#ef4444' }} 
+              textStyle={{ color: '#ef4444' }}
+            />
+          </View>
+        ) : (
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Nearby Drivers</Text>
@@ -172,6 +197,7 @@ export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
             </View>
           )}
         </View>
+        )}
       </ScrollView>
 
       <Modal visible={modalVisible} transparent={true} animationType="fade">
@@ -417,6 +443,7 @@ const getStyles = (colors: any) => StyleSheet.create({
     fontWeight: '700',
   },
 });
+
 
 
 
