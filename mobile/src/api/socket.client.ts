@@ -58,6 +58,14 @@ class SocketClient {
   offNotification() {
     this.socket?.off('notification');
   }
+
+  onTripCanceled(callback: (data: { tripId: string, reason: string }) => void) {
+    this.socket?.on('trip_canceled', callback);
+  }
+
+  offTripCanceled() {
+    this.socket?.off('trip_canceled');
+  }
 }
 
 export const socketClient = new SocketClient();

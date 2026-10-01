@@ -18,6 +18,7 @@ import { Button } from '../../components/common/Button';
 import { useAuth } from '../../hooks/useAuth';
 import { driverApi, DriverProfile } from '../../api/driver.api';
 import { tripApi } from '../../api/trip.api';
+import { socketClient } from '../../api/socket.client';
 import { IncomingRequestModal } from './IncomingRequestModal';
 import { ActiveTripCard } from '../../components/trip/ActiveTripCard';
 import { BottomTabBar } from '../../components/layout/BottomTabBar';
@@ -100,6 +101,20 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [incomingTrip, setIncomingTrip] = useState<any>(null);
   const [activeTrip, setActiveTrip] = useState<any>(null);
+
+  // Listen for real-time cancellations
+  useEffect(() => {
+    socketClient.onTripCanceled((data: any) => {
+      Alert.alert(
+        'Request Canceled',
+        `The customer canceled the trip request.\nReason: ${data.reason}`,
+        [{ text: 'OK', onPress: () => setIncomingTrip(null) }]
+      );
+    });
+    return () => {
+      socketClient.offTripCanceled();
+    };
+  }, []);
 
   // Poll for trips when online
   useEffect(() => {
@@ -660,5 +675,7 @@ const getStyles = (colors: any) => StyleSheet.create({
     marginTop: 4,
   },
 });
+
+
 
 
