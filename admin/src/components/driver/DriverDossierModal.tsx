@@ -41,12 +41,12 @@ export const DriverDossierModal: React.FC<DriverDossierModalProps> = ({ driver, 
 
   const vehicle = driver.vehicle;
   
-  // Construct absolute URL helper
+  // Construct absolute URL helper - handles Cloudinary full URLs and legacy local paths
+  const API_BASE = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1').replace('/api/v1', '');
   const getFullUrl = (path: string | undefined | null) => {
     if (!path) return '';
-    if (path.startsWith('http')) return path;
-    // Assuming backend runs on localhost:5000 in dev
-    return `http://localhost:5000${path}`;
+    if (path.startsWith('http')) return path; // Cloudinary or any absolute URL
+    return `${API_BASE}${path}`;             // Legacy /uploads/ local path
   };
 
   return (
