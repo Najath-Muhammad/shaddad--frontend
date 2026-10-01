@@ -179,6 +179,7 @@ export const RootNavigator: React.FC = () => {const { colors } = useTheme();
             tripId={tripState.tripId!}
             onTripCompleted={() => setCurrentScreen('trip-review-rating')}
             onNavigatePayment={() => setCurrentScreen('payment-checkout')}
+            onBack={() => setCurrentScreen('customer-home')}
           />
         )}
 
@@ -208,6 +209,7 @@ export const RootNavigator: React.FC = () => {const { colors } = useTheme();
           <ActiveTripDriverScreen
             tripId={tripState.tripId!}
             onTripCompleted={() => setCurrentScreen('trip-review-rating-driver')}
+            onBack={() => setCurrentScreen('driver-home')}
           />
         )}
 
@@ -273,4 +275,5 @@ const getStyles = (colors: any) => StyleSheet.create({
     backgroundColor: colors.background,
   },
 });
+
 

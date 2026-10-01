@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Text, ScrollView, Platform, Modal, TouchableOpacity } from 'react-native';
 import { tripApi } from '../../api/trip.api';
 import { socketClient } from '../../api/socket.client';
+import { Header } from '../../components/layout/Header';
 import { Button } from '../../components/common/Button';
 import { Card } from '../../components/common/Card';
 import { Input } from '../../components/common/Input';
@@ -10,9 +11,10 @@ import { showError, showSuccess } from '../../utils/alertUtils';
 interface Props {
   tripId: string;
   onTripCompleted: () => void;
+  onBack?: () => void;
 }
 
-export const ActiveTripDriverScreen: React.FC<Props> = ({ tripId, onTripCompleted }) => {
+export const ActiveTripDriverScreen: React.FC<Props> = ({ tripId, onTripCompleted, onBack }) => {
   const [trip, setTrip] = useState<any>(null);
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
@@ -263,4 +265,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
+
 

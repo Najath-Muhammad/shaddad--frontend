@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Text, ScrollView, Alert } from 'react-native';
 import { tripApi } from '../../api/trip.api';
 import { socketClient } from '../../api/socket.client';
+import { Header } from '../../components/layout/Header';
 import { Button } from '../../components/common/Button';
 import { Card } from '../../components/common/Card';
 
@@ -9,9 +10,10 @@ interface Props {
   tripId: string;
   onTripCompleted: () => void;
   onNavigatePayment: () => void;
+  onBack?: () => void;
 }
 
-export const ActiveTripCustomerScreen: React.FC<Props> = ({ tripId, onTripCompleted, onNavigatePayment }) => {
+export const ActiveTripCustomerScreen: React.FC<Props> = ({ tripId, onTripCompleted, onNavigatePayment, onBack }) => {
   const [trip, setTrip] = useState<any>(null);
   const [driverLocation, setDriverLocation] = useState<{ lat: number, lng: number } | null>(null);
 
@@ -96,4 +98,5 @@ const styles = StyleSheet.create({
   statusBadge: { fontSize: 16, fontWeight: 'bold', color: '#007bff' },
   otp: { fontSize: 32, fontWeight: 'bold', letterSpacing: 5, color: 'green', marginVertical: 8 }
 });
+
 

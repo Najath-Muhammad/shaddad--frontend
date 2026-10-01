@@ -137,7 +137,7 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
           const activeRes = await tripApi.getDriverTrips();
           if (activeRes.data?.data && activeRes.data.data.length > 0) {
             const mostRecentTrip = activeRes.data.data[0];
-            if (!['PENDING_DRIVER_RESPONSE', 'REJECTED', 'EXPIRED', 'COMPLETED'].includes(mostRecentTrip.status)) {
+            if (!['PENDING_DRIVER_RESPONSE', 'REJECTED', 'EXPIRED', 'COMPLETED', 'CANCELED'].includes(mostRecentTrip.status)) {
               setActiveTrip(mostRecentTrip);
             } else {
               setActiveTrip(null);
