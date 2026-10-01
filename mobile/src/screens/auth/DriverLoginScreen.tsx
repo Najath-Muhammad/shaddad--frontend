@@ -21,8 +21,8 @@ export const DriverLoginScreen: React.FC<DriverLoginScreenProps> = ({
   const styles = getStyles(colors);
   const { login, isLoading, error } = useAuth();
 
-  const [identifier, setIdentifier] = useState('+966559876543');
-  const [password, setPassword] = useState('Password123');
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
   const [localError, setLocalError] = useState<string | null>(null);
 
   const handleSubmit = async () => {

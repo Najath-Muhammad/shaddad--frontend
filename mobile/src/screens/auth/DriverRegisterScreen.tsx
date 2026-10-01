@@ -22,7 +22,7 @@ export const DriverRegisterScreen: React.FC<DriverRegisterScreenProps> = ({
   const { registerDriver, isLoading, error } = useAuth();
 
   const [fullName, setFullName] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('+9665');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [nationalIdNumber, setNationalIdNumber] = useState('');
   const [licenseNumber, setLicenseNumber] = useState('');
   const [password, setPassword] = useState('');

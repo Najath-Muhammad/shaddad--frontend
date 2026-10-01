@@ -21,8 +21,8 @@ export const CustomerLoginScreen: React.FC<CustomerLoginScreenProps> = ({
   const styles = getStyles(colors);
   const { login, isLoading, error } = useAuth();
 
-  const [identifier, setIdentifier] = useState('+966551234567');
-  const [password, setPassword] = useState('Password123');
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
   const [localError, setLocalError] = useState<string | null>(null);
 
   const handleSubmit = async () => {

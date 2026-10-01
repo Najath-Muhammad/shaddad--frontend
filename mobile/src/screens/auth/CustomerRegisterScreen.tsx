@@ -22,7 +22,7 @@ export const CustomerRegisterScreen: React.FC<CustomerRegisterScreenProps> = ({
   const { registerCustomer, isLoading, error } = useAuth();
 
   const [fullName, setFullName] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('+9665');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
