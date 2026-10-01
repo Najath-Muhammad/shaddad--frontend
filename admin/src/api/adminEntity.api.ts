@@ -13,8 +13,8 @@ export const adminEntityApi = {
     const res = await apiClient.get('/admin/trips');
     return res.data;
   },
-  toggleUserBlock: async (userId: string) => {
-    const res = await apiClient.post(`/admin/users/${userId}/toggle-block`);
+  toggleUserBlock: async (userId: string, reason?: string) => {
+    const res = await apiClient.post(`/admin/users/${userId}/toggle-block`, { reason });
     return res.data;
   },
   getDriverRatingHistory: async (driverProfileId: string) => {

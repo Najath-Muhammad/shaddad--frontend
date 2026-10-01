@@ -66,7 +66,7 @@ export const Drivers: React.FC = () => {
                   Ratings
                 </button>
                 <button
-                  onClick={() => handleToggleBlock(d.user.id)}
+                  onClick={() => handleToggleBlock(d.user.id, d.user.isActive)}
                   className={`px-3 py-1 text-sm font-semibold rounded-md ${
                     d.user.isActive ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
                   }`}
@@ -96,6 +96,37 @@ export const Drivers: React.FC = () => {
                   {r.comment && <p className="text-sm text-gray-600 mt-1">"{r.comment}"</p>}
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+    
+      {blockModalOpen.isOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-xl">
+            <h3 className="text-lg font-bold mb-2 text-red-600">Block User</h3>
+            <p className="text-gray-600 mb-4 text-sm">Are you sure you want to block this user? They will be logged out immediately.</p>
+            <textarea
+              className="w-full border border-gray-300 rounded p-2 mb-4 text-sm"
+              rows={3}
+              placeholder="Enter reason for blocking (shown to user)..."
+              value={blockModalOpen.reason}
+              onChange={(e) => setBlockModalOpen({ ...blockModalOpen, reason: e.target.value })}
+            />
+            <div className="flex justify-end gap-2">
+              <button 
+                onClick={() => setBlockModalOpen({ isOpen: false, userId: '', isActive: true, reason: '' })}
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md font-semibold text-sm hover:bg-gray-200"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={confirmBlock}
+                disabled={!blockModalOpen.reason.trim()}
+                className="px-4 py-2 bg-red-600 text-white rounded-md font-semibold text-sm hover:bg-red-700 disabled:opacity-50"
+              >
+                Confirm Block
+              </button>
             </div>
           </div>
         </div>
