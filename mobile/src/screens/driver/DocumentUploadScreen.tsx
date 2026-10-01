@@ -180,8 +180,10 @@ export const DocumentUploadScreen: React.FC<DocumentUploadScreenProps> = ({ onBa
     if (sessionUri) return sessionUri;
     // Fall back to the persisted server URL
     const serverPath = profile ? doc.getExistingUrl(profile) : null;
-    if (serverPath) return `${SERVER_BASE}${serverPath}`;
-    return null;
+    if (!serverPath) return null;
+    // Cloudinary URLs are already absolute; local dev paths are relative (/uploads/...)
+    if (serverPath.startsWith('http')) return serverPath;
+    return `${SERVER_BASE}${serverPath}`;
   };
 
   return (
