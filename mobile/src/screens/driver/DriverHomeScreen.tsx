@@ -127,11 +127,28 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
         try {
           // Poll incoming
           const incRes = await tripApi.getIncomingRequests();
-          if (incRes.data?.data?.length > 0) {
-            setIncomingTrip(incRes.data.data[0]);
-          } else {
-            setIncomingTrip(null);
-          }
+            if (incRes.data?.data?.length > 0) {
+              setIncomingTrip(incRes.data.data[0]);
+            } else {
+              setIncomingTrip((currentTrip: any) => {
+                if (currentTrip) {
+                  setCancelReason((currentReason) => {
+                    if (!currentReason) {
+                      tripApi.getDriverTrip(currentTrip.id).then(res => {
+                        if (res.data?.status === 'CANCELED') {
+                          setCancelReason(res.data.cancelReason || 'Customer canceled the request');
+                        } else {
+                          setIncomingTrip(null);
+                        }
+                      }).catch(() => setIncomingTrip(null));
+                    }
+                    return currentReason;
+                  });
+                  return currentTrip;
+                }
+                return null;
+              });
+            }
 
           // Poll active trips
           const activeRes = await tripApi.getDriverTrips();
@@ -678,6 +695,8 @@ const getStyles = (colors: any) => StyleSheet.create({
     marginTop: 4,
   },
 });
+
+
 
 
 
