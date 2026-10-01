@@ -7,10 +7,12 @@ import { tripApi } from '../../api/trip.api';
 interface Props {
   trip: any;
   visible: boolean;
+  cancelReason?: string | null;
   onRespond: (accepted: boolean) => void;
+  onDismiss?: () => void;
 }
 
-export const IncomingRequestModal: React.FC<Props> = ({ trip, visible, onRespond }) => {
+export const IncomingRequestModal: React.FC<Props> = ({ trip, visible, cancelReason, onRespond, onDismiss }) => {
   const [loading, setLoading] = React.useState(false);
 
   const handleRespond = async (accept: boolean) => {
@@ -61,4 +63,5 @@ const styles = StyleSheet.create({
   buttons: { flexDirection: 'row', gap: 10, marginTop: 10 },
   btn: { flex: 1 }
 });
+
 

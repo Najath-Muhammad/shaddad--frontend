@@ -100,15 +100,18 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
   const [isOnline, setIsOnline] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [incomingTrip, setIncomingTrip] = useState<any>(null);
+  const [cancelReason, setCancelReason] = useState<string | null>(null);
   const [activeTrip, setActiveTrip] = useState<any>(null);
 
   // Listen for real-time cancellations
   useEffect(() => {
     socketClient.onTripCanceled((data: any) => {
+      setCancelReason(data.reason || 'No reason provided');
+      // Fallback alert for iOS or if modal is not open
       Alert.alert(
         'Request Canceled',
-        `The customer canceled the trip request.\nReason: ${data.reason}`,
-        [{ text: 'OK', onPress: () => setIncomingTrip(null) }]
+        `The customer canceled the trip request.\nReason: ${data.reason || 'No reason provided'}`,
+        [{ text: 'OK', onPress: () => { setIncomingTrip(null); setCancelReason(null); } }]
       );
     });
     return () => {
