@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   ViewStyle,
   TextStyle,
+  Modal,
 } from 'react-native';
 import { useTheme } from '../../theme/useTheme';
 import { Header } from '../../components/layout/Header';
@@ -107,7 +108,7 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
   useEffect(() => {
     socketClient.onTripCanceled((data: any) => {
       setCancelReason(data.reason || 'No reason provided');
-      
+      setIncomingTrip(null);
     });
     return () => {
       socketClient.offTripCanceled();
@@ -132,7 +133,8 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
                       tripApi.getDriverTrip(currentTrip.id).then(res => {
                         if (res.data?.data?.status === 'CANCELED') {
                           setCancelReason(res.data?.data?.cancelReason || 'Customer canceled the request');
-                        } else {
+                            setIncomingTrip(null);
+                          } else {
                           setIncomingTrip(null);
                         }
                       }).catch(() => setIncomingTrip(null));
@@ -430,15 +432,27 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
       {isApproved ? <ApprovedView /> : <PendingView />}
       
       <IncomingRequestModal 
-        trip={incomingTrip} 
-        visible={!!incomingTrip} 
-        onRespond={(accepted) => {
-          if (accepted) {
-            onNavigateActiveTrip(incomingTrip.id);
-          }
-          setIncomingTrip(null);
-        }} 
-      />
+          trip={incomingTrip} 
+          visible={!!incomingTrip && !cancelReason} 
+          onRespond={(accepted) => {
+            if (accepted) {
+              onNavigateActiveTrip(incomingTrip.id);
+            }
+            setIncomingTrip(null);
+          }} 
+        />
+        
+        {/* Dedicated Cancel Modal */}
+        <Modal visible={!!cancelReason} transparent animationType="fade">
+          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 20 }}>
+            <Card style={{ padding: 20, alignItems: 'center' }}>
+              <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#ef4444', marginBottom: 12 }}>Trip Canceled</Text>
+              <Text style={{ fontSize: 16, textAlign: 'center', marginBottom: 8 }}>The customer has canceled this trip request.</Text>
+              <Text style={{ fontSize: 14, fontStyle: 'italic', color: '#666', textAlign: 'center', marginBottom: 20 }}>Reason: {cancelReason}</Text>
+              <Button title="Dismiss" onPress={() => setCancelReason(null)} style={{ width: '100%' }} />
+            </Card>
+          </View>
+        </Modal>
 
       <BottomTabBar 
         activeTab="home" 
@@ -690,6 +704,10 @@ const getStyles = (colors: any) => StyleSheet.create({
     marginTop: 4,
   },
 });
+
+
+
+
 
 
 
