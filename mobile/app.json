@@ -7,7 +7,8 @@
     "userInterfaceStyle": "automatic",
     "splash": {
       "resizeMode": "contain",
-      "backgroundColor": "#000000"
+      "backgroundColor": "#000000",
+      "image": "./assets/splash.png"
     },
     "icon": "./assets/icon.png",
     "ios": {
@@ -33,7 +34,7 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-asset"
+      "@stripe/stripe-react-native"
     ],
     "extra": {
       "eas": {
