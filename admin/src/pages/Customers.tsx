@@ -4,6 +4,7 @@ import { adminEntityApi } from '../api/adminEntity.api';
 export const Customers: React.FC = () => {
   const [customers, setCustomers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [blockModalOpen, setBlockModalOpen] = useState<{ isOpen: boolean; userId: string; isActive: boolean; reason: string }>({ isOpen: false, userId: "", isActive: true, reason: "" });
 
   const fetchCustomers = async () => {
     try {
@@ -20,15 +21,29 @@ export const Customers: React.FC = () => {
     fetchCustomers();
   }, []);
 
-  const handleToggleBlock = async (userId: string) => {
-    try {
-      await adminEntityApi.toggleUserBlock(userId);
-      fetchCustomers();
-    } catch (e) {
-      alert('Failed to toggle block status');
+  const handleToggleBlock = async (userId: string, isActive: boolean) => {
+    if (isActive) {
+      setBlockModalOpen({ isOpen: true, userId, isActive, reason: '' });
+    } else {
+      try {
+        await adminEntityApi.toggleUserBlock(userId);
+        fetchCustomers();
+      } catch (e) {
+        alert('Failed to unblock user');
+      }
     }
   };
 
+  const confirmBlock = async () => {
+    try {
+      await adminEntityApi.toggleUserBlock(blockModalOpen.userId, blockModalOpen.reason);
+      setBlockModalOpen({ isOpen: false, userId: '', isActive: true, reason: '' });
+      fetchCustomers();
+    } catch (e) {
+      alert('Failed to block user');
+    }
+  };
+  
   if (loading) return <div>Loading customers...</div>;
 
   return (

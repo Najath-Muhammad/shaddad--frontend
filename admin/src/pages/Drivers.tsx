@@ -4,6 +4,7 @@ import { adminEntityApi } from '../api/adminEntity.api';
 export const Drivers: React.FC = () => {
   const [drivers, setDrivers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [blockModalOpen, setBlockModalOpen] = useState<{ isOpen: boolean; userId: string; isActive: boolean; reason: string }>({ isOpen: false, userId: "", isActive: true, reason: "" });
   const [historyModal, setHistoryModal] = useState<any[] | null>(null);
 
   const fetchDrivers = async () => {
@@ -21,15 +22,29 @@ export const Drivers: React.FC = () => {
     fetchDrivers();
   }, []);
 
-  const handleToggleBlock = async (userId: string) => {
-    try {
-      await adminEntityApi.toggleUserBlock(userId);
-      fetchDrivers();
-    } catch (e) {
-      alert('Failed to toggle block status');
+  const handleToggleBlock = async (userId: string, isActive: boolean) => {
+    if (isActive) {
+      setBlockModalOpen({ isOpen: true, userId, isActive, reason: '' });
+    } else {
+      try {
+        await adminEntityApi.toggleUserBlock(userId);
+        fetchDrivers();
+      } catch (e) {
+        alert('Failed to unblock user');
+      }
     }
   };
 
+  const confirmBlock = async () => {
+    try {
+      await adminEntityApi.toggleUserBlock(blockModalOpen.userId, blockModalOpen.reason);
+      setBlockModalOpen({ isOpen: false, userId: '', isActive: true, reason: '' });
+      fetchDrivers();
+    } catch (e) {
+      alert('Failed to block user');
+    }
+  };
+  
   const handleViewRatings = async (driverProfileId: string) => {
     try {
       const res = await adminEntityApi.getDriverRatingHistory(driverProfileId);
