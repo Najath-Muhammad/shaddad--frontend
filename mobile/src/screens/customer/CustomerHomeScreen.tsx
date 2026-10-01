@@ -142,7 +142,7 @@ export const CustomerHomeScreen: React.FC<CustomerHomeScreenProps> = ({
                 {/* Nearby Drivers or Pending State */}
         {pendingTrip ? (
           <View style={styles.pendingCard}>
-            <ActivityIndicator size="large" color={colors.primary} />
+            <ActivityIndicator size="large" color={colors.text} />
             <Text style={styles.pendingTitle}>Requesting Driver...</Text>
             <Text style={styles.pendingText}>Waiting for the driver to accept your request.</Text>
             <Button 
@@ -311,7 +311,7 @@ const getStyles = (colors: any) => StyleSheet.create({
   },
   quickActionCard: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 16,
     alignItems: 'center',
@@ -338,7 +338,7 @@ const getStyles = (colors: any) => StyleSheet.create({
   emptyState: {
     alignItems: 'center',
     paddingVertical: 40,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     borderRadius: 16,
   },
   emptyIcon: {
@@ -357,7 +357,7 @@ const getStyles = (colors: any) => StyleSheet.create({
   driverCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     padding: 16,
     borderRadius: 16,
     shadowColor: '#000',
@@ -417,7 +417,7 @@ const getStyles = (colors: any) => StyleSheet.create({
     fontWeight: '700',
   },
   pendingCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 32,
     alignItems: 'center',
@@ -448,7 +448,7 @@ const getStyles = (colors: any) => StyleSheet.create({
   },
   modalContent: {
     width: '80%',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     borderRadius: 24,
     padding: 24,
     alignItems: 'center',
@@ -486,6 +486,7 @@ const getStyles = (colors: any) => StyleSheet.create({
     textAlignVertical: 'top',
   },
 });
+
 
 
 

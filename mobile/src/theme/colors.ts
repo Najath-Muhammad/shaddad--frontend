@@ -44,4 +44,5 @@ export const darkColors = {
   disabledText: '#6B7280',
 };
 
-export const colors = lightColors;
+export const colors = { ...lightColors };
+

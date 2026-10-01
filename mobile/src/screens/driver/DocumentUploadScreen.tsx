@@ -194,7 +194,7 @@ export const DocumentUploadScreen: React.FC<DocumentUploadScreenProps> = ({ onBa
 
       {loadingProfile ? (
         <View style={styles.loader}>
-          <ActivityIndicator size="large" color={colors.primary} />
+          <ActivityIndicator size="large" color={colors.text} />
           <Text style={styles.loaderText}>Loading existing documents…</Text>
         </View>
       ) : (
@@ -278,7 +278,7 @@ export const DocumentUploadScreen: React.FC<DocumentUploadScreenProps> = ({ onBa
                     >
                       {isUploading ? (
                         <View style={styles.uploadBtnInner}>
-                          <ActivityIndicator size="small" color={colors.primary} />
+                          <ActivityIndicator size="small" color={colors.text} />
                           <Text style={[styles.uploadBtnText, { marginLeft: 8 }]}>Uploading…</Text>
                         </View>
                       ) : (
@@ -451,7 +451,7 @@ const getStyles = (colors: any) => StyleSheet.create({
   },
   uploadBtn: {
     borderWidth: 1.5,
-    borderColor: colors.primary,
+    borderColor: colors.text,
     borderStyle: 'dashed',
     borderRadius: 10,
     paddingVertical: 14,
@@ -470,7 +470,7 @@ const getStyles = (colors: any) => StyleSheet.create({
   uploadBtnText: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.primary,
+    color: colors.text,
   },
   uploadBtnTextDone: {
     color: '#059669',
@@ -482,4 +482,6 @@ const getStyles = (colors: any) => StyleSheet.create({
     marginTop: 4,
   },
 });
+
+
 
