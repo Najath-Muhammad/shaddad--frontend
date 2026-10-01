@@ -1,6 +1,12 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import { useAuth } from '../../hooks/useAuth';
+import { apiClient } from '../../api/client';
+
+// Silently wake up the server on app launch (handles Render free tier cold start)
+const warmUpServer = () => {
+  apiClient.get('/health').catch(() => {}).catch(() => {}); // Fire and forget, ignore errors
+};
 
 interface SplashScreenProps {
   onFinish: (destination: 'role-select' | 'customer-home' | 'driver-home') => void;
@@ -14,6 +20,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
 
   useEffect(() => {
     // Elegant fade in and scale up animation
+    warmUpServer(); // Wake up Render backend immediately
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -97,4 +104,5 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
 });
+
 
