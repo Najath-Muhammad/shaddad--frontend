@@ -135,8 +135,8 @@ export const DriverHomeScreen: React.FC<DriverHomeScreenProps> = ({
                   setCancelReason((currentReason) => {
                     if (!currentReason) {
                       tripApi.getDriverTrip(currentTrip.id).then(res => {
-                        if (res.data?.status === 'CANCELED') {
-                          setCancelReason(res.data.cancelReason || 'Customer canceled the request');
+                        if (res.data?.data?.status === 'CANCELED') {
+                          setCancelReason(res.data?.data?.cancelReason || 'Customer canceled the request');
                         } else {
                           setIncomingTrip(null);
                         }
@@ -695,6 +695,7 @@ const getStyles = (colors: any) => StyleSheet.create({
     marginTop: 4,
   },
 });
+
 
 
 
