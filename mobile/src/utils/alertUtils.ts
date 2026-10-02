@@ -2,7 +2,11 @@ import { Alert } from 'react-native';
 
 export const parseApiError = (error: unknown, fallbackMessage = 'An unexpected error occurred.'): string => {
   // Check if it's our standard backend error response
-  const apiMessage = (error as any)?.response?.data?.error?.message;
+    const errorData = (error as any)?.response?.data?.error;
+  if (errorData?.details && Array.isArray(errorData.details) && errorData.details.length > 0) {
+    return errorData.details.map((d: any) => d.message).join('\n');
+  }
+  const apiMessage = errorData?.message;
   if (apiMessage) return apiMessage;
   
   // If it's a generic Axios or Network error, map to friendly text
@@ -25,4 +29,5 @@ export const showError = (error: unknown, title = 'Error', fallback?: string) =>
 export const showSuccess = (message: string, title = 'Success') => {
   Alert.alert(title, message);
 };
+
 
