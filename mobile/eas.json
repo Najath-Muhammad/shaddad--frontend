@@ -13,9 +13,6 @@
                                                   "buildType":  "apk"
                                               },
                                   "distribution":  "internal",
-                                  "env":  {
-                                              "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY":  "pk_test_51T8IUF8wis5cbY8DF3sPHsGfD1sdPpEe5Yz1VowGlY36iO4E4O4usnldmH8sHBFzCkml84oraqOzcJwYx4XP01yV00LWvyLlbV"
-                                          },
                                   "channel":  "preview"
                               },
                   "production":  {
