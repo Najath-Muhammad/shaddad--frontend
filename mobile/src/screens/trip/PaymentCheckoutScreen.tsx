@@ -36,11 +36,11 @@ export const PaymentCheckoutScreen: React.FC<Props> = ({ tripId, onPaymentSucces
         }
       });
       if (error) {
-        console.warn('Stripe initialization warning:', error.message);
+        Alert.alert('Stripe Setup Error', error.message);
         setIsSimulated(true); // Fallback if keys are invalid
       }
     } catch (error: any) {
-      console.warn('Backend Stripe Error:', error.response?.data?.error?.message);
+      Alert.alert('Backend Stripe Error', error.response?.data?.error?.message || 'Unknown error');
       setIsSimulated(true); // Fallback if backend keys are invalid
     } finally {
       setLoading(false);
@@ -88,3 +88,4 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, fontWeight: 'bold', marginBottom: 16, textAlign: 'center' },
   text: { fontSize: 16, textAlign: 'center', marginBottom: 32, color: '#666' }
 });
+
