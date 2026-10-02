@@ -186,7 +186,14 @@ export const RootNavigator: React.FC = () => {const { colors } = useTheme();
         {currentScreen === 'payment-checkout' && (
           <PaymentCheckoutScreen
             tripId={tripState.tripId!}
-            onPaymentSuccess={() => setCurrentScreen('active-trip-customer')}
+            onPaymentSuccess={async () => {
+              try {
+                await tripApi.simulatePaymentSuccess(tripState.tripId!);
+              } catch (e) {
+                console.error(e);
+              }
+              setCurrentScreen('active-trip-customer');
+            }}
             onCancel={() => setCurrentScreen('active-trip-customer')}
           />
         )}
@@ -275,5 +282,6 @@ const getStyles = (colors: any) => StyleSheet.create({
     backgroundColor: colors.background,
   },
 });
+
 
 
