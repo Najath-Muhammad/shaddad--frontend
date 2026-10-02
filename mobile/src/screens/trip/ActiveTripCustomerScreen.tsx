@@ -55,7 +55,7 @@ export const ActiveTripCustomerScreen: React.FC<Props> = ({ tripId, onTripComple
 
   return (
     <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
-      <Header title="Active Trip" subtitle={`ID: ${trip.id.slice(0, 8)}`} showBack={false} />
+      <Header title="Active Trip" subtitle={`ID: ${trip.id.slice(0, 8)}`} showBack={true} onBack={onBack} />
       <ScrollView contentContainerStyle={styles.container}>
         <Card style={styles.card}>
           <Text style={styles.title}>Trip Status</Text>
@@ -118,6 +118,7 @@ const styles = StyleSheet.create({
   statusBadge: { fontSize: 16, fontWeight: 'bold', color: '#007bff' },
   otp: { fontSize: 32, fontWeight: 'bold', letterSpacing: 5, color: 'green', marginVertical: 8 }
 });
+
 
 
 

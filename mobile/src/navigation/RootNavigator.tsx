@@ -52,7 +52,7 @@ export const RootNavigator: React.FC = () => {const { colors } = useTheme();
   const styles = getStyles(colors);
   const [currentScreen, setCurrentScreen] = useState<ScreenState>('splash');
   const [tripState, setTripState] = useState<{ driverId?: string; vehicleType?: string; tripDetails?: any; tripId?: string }>({});
-  const { initialize, isAuthenticated, activeRole, clearAuth } = useAuthStore();
+  const { initialize, isAuthenticated, activeRole, appMode, clearAuth } = useAuthStore();
 
   useEffect(() => {
     void initialize();
@@ -60,9 +60,9 @@ export const RootNavigator: React.FC = () => {const { colors } = useTheme();
 
   useEffect(() => {
     if (isAuthenticated) {
-      if (activeRole === 'DRIVER') {
+      if (appMode === 'DRIVER') {
         setCurrentScreen('driver-home');
-      } else if (activeRole === 'CUSTOMER') {
+      } else if (appMode === 'CUSTOMER') {
         setCurrentScreen('customer-home');
       }
 
@@ -77,7 +77,7 @@ export const RootNavigator: React.FC = () => {const { colors } = useTheme();
     } else {
       socketClient.disconnect();
     }
-  }, [isAuthenticated, activeRole]);
+  }, [isAuthenticated, appMode]);
 
   const handleSplashFinish = useCallback(
     (dest: 'role-select' | 'customer-home' | 'driver-home') => {
@@ -208,8 +208,8 @@ export const RootNavigator: React.FC = () => {const { colors } = useTheme();
 
         {currentScreen === 'trip-history' && (
           <TripHistoryScreen 
-            onNavigateHome={() => setCurrentScreen(activeRole === 'CUSTOMER' ? 'customer-home' : 'driver-home')}
-            onNavigateProfile={() => setCurrentScreen(activeRole === 'CUSTOMER' ? 'customer-profile' : 'driver-profile')}
+            onNavigateHome={() => setCurrentScreen(appMode === 'CUSTOMER' ? 'customer-home' : 'driver-home')}
+            onNavigateProfile={() => setCurrentScreen(appMode === 'CUSTOMER' ? 'customer-profile' : 'driver-profile')}
           />
         )}
 
@@ -283,6 +283,7 @@ const getStyles = (colors: any) => StyleSheet.create({
     backgroundColor: colors.background,
   },
 });
+
 
 
 

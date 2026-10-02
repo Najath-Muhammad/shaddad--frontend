@@ -31,7 +31,8 @@ export const useAuth = () => {
       setError(null);
       try {
         const { user: loggedInUser, tokens } = await authApi.login(payload);
-        await setAuth(loggedInUser, tokens.accessToken, tokens.refreshToken);
+        const mode = payload.expectedRole === 'DRIVER' ? 'DRIVER' : 'CUSTOMER';
+        await setAuth(loggedInUser, tokens.accessToken, tokens.refreshToken, mode);
         return loggedInUser;
       } catch (err: unknown) {
         const message = parseApiError(err, 'Login failed');
@@ -50,7 +51,7 @@ export const useAuth = () => {
       setError(null);
       try {
         const { user: registeredUser, tokens } = await authApi.registerCustomer(payload);
-        await setAuth(registeredUser, tokens.accessToken, tokens.refreshToken);
+        await setAuth(registeredUser, tokens.accessToken, tokens.refreshToken, 'CUSTOMER');
         return registeredUser;
       } catch (err: unknown) {
         const message = parseApiError(err, 'Registration failed');
@@ -69,7 +70,7 @@ export const useAuth = () => {
       setError(null);
       try {
         const { user: registeredUser, tokens } = await authApi.registerDriver(payload);
-        await setAuth(registeredUser, tokens.accessToken, tokens.refreshToken);
+        await setAuth(registeredUser, tokens.accessToken, tokens.refreshToken, 'CUSTOMER');
         return registeredUser;
       } catch (err: unknown) {
         const message = parseApiError(err, 'Driver registration failed');
@@ -122,3 +123,6 @@ export const useAuth = () => {
     logout,
   };
 };
+
+
+

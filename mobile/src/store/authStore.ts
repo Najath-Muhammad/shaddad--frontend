@@ -6,6 +6,7 @@ import { tokenManager } from '../api/client';
 
 const ACCESS_KEY = 'shaddad_mobile_access_token';
 const REFRESH_KEY = 'shaddad_mobile_refresh_token';
+const APP_MODE_KEY = 'shaddad_mobile_app_mode';
 
 const storage = {
   getItem: async (key: string): Promise<string | null> => {
@@ -47,6 +48,7 @@ const storage = {
 };
 
 interface AuthState {
+  appMode: 'CUSTOMER' | 'DRIVER' | null;
   user: User | null;
   activeRole: UserRole | null;
   isAuthenticated: boolean;
@@ -54,7 +56,7 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   initialize: () => Promise<void>;
-  setAuth: (user: User, accessToken: string, refreshToken: string) => Promise<void>;
+  setAuth: (user: User, accessToken: string, refreshToken: string, mode: 'CUSTOMER' | 'DRIVER') => Promise<void>;
   updateTokens: (accessToken: string, refreshToken: string) => Promise<void>;
   setUser: (user: User) => void;
   clearAuth: () => Promise<void>;
@@ -65,6 +67,7 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   activeRole: null,
+  appMode: null,
   isAuthenticated: false,
   isInitializing: true,
   isLoading: false,
@@ -74,6 +77,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const accessToken = await storage.getItem(ACCESS_KEY);
       const refreshToken = await storage.getItem(REFRESH_KEY);
+      const appMode = (await storage.getItem(APP_MODE_KEY)) as 'CUSTOMER' | 'DRIVER' | null;
 
       if (accessToken && refreshToken) {
         tokenManager.setTokens(accessToken, refreshToken);
@@ -85,7 +89,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             void get().clearAuth();
           }
         );
-        set({ isAuthenticated: true, isInitializing: false });
+        set({ isAuthenticated: true, isInitializing: false, appMode });
       } else {
         tokenManager.setTokens(null, null);
         set({ isAuthenticated: false, isInitializing: false });
@@ -95,7 +99,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  setAuth: async (user, accessToken, refreshToken) => {
+  setAuth: async (user, accessToken, refreshToken, mode) => {
+    await storage.setItem(APP_MODE_KEY, mode);
     await storage.setItem(ACCESS_KEY, accessToken);
     await storage.setItem(REFRESH_KEY, refreshToken);
     tokenManager.setTokens(accessToken, refreshToken);
@@ -111,6 +116,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({
       user,
       activeRole: user.role,
+      appMode: mode,
       isAuthenticated: true,
       error: null,
     });
@@ -128,12 +134,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   clearAuth: async () => {
     await storage.deleteItem(ACCESS_KEY);
+    await storage.deleteItem(APP_MODE_KEY);
     await storage.deleteItem(REFRESH_KEY);
     tokenManager.setTokens(null, null);
 
     set({
       user: null,
       activeRole: null,
+  appMode: null,
       isAuthenticated: false,
       error: null,
     });
@@ -142,3 +150,5 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   setLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error }),
 }));
+
+

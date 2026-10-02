@@ -1,3 +1,4 @@
+import { useAuthStore } from '../../store/authStore';
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import { useAuth } from '../../hooks/useAuth';
@@ -43,9 +44,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
       if (isAuthenticated) {
         try {
           const profile = await loadProfile();
-          if (profile?.role === 'DRIVER') {
+          const { appMode } = useAuthStore.getState();
+          if (appMode === 'DRIVER') {
             onFinish('driver-home');
-          } else if (profile?.role === 'CUSTOMER') {
+          } else if (appMode === 'CUSTOMER') {
             onFinish('customer-home');
           } else {
             onFinish('role-select');
@@ -104,5 +106,7 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
 });
+
+
 
 
