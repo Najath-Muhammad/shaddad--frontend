@@ -166,7 +166,7 @@ export const RootNavigator: React.FC = () => {const { colors } = useTheme();
             tripDetails={tripState.tripDetails}
             onConfirm={(tripId) => {
               setTripState({ ...tripState, tripId });
-              setCurrentScreen('customer-home');
+              setCurrentScreen('active-trip-customer');
             }}
             onCancel={() => setCurrentScreen('create-trip')}
           />

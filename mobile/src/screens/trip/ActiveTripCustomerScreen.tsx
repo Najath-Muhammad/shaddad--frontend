@@ -54,40 +54,60 @@ export const ActiveTripCustomerScreen: React.FC<Props> = ({ tripId, onTripComple
   if (!trip) return <View style={styles.container}><Text>Loading...</Text></View>;
 
   return (
-    <ScrollView style={styles.container}>
-      <Card style={styles.card}>
-        <Text style={styles.title}>Trip Status</Text>
-        <Text style={styles.statusBadge}>{trip.status}</Text>
-      </Card>
-
-      {(trip.status === 'ACCEPTED' || trip.status === 'PAYMENT_PENDING') && (
-        <Button title="Pay Now" onPress={onNavigatePayment} />
-      )}
-
-      {trip.deliveryOtp && (
+    <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+      <Header title="Active Trip" subtitle={`ID: ${trip.id.slice(0, 8)}`} showBack={false} />
+      <ScrollView contentContainerStyle={styles.container}>
         <Card style={styles.card}>
-          <Text style={styles.title}>Delivery OTP</Text>
-          <Text style={styles.otp}>{trip.deliveryOtp}</Text>
-          <Text>Show this to the driver when they deliver the cargo.</Text>
+          <Text style={styles.title}>Trip Status</Text>
+          <Text style={styles.statusBadge}>{trip.status}</Text>
         </Card>
-      )}
 
-      <Card style={styles.card}>
-        <Text style={styles.title}>Driver Location (Realtime)</Text>
-        {driverLocation ? (
-          <Text>Lat: {driverLocation.lat.toFixed(4)}, Lng: {driverLocation.lng.toFixed(4)}</Text>
-        ) : (
-          <Text>Waiting for driver GPS...</Text>
+        {(trip.status === 'ACCEPTED' || trip.status === 'PAYMENT_PENDING') && (
+          <Button title="Pay Now" onPress={onNavigatePayment} />
         )}
-      </Card>
 
-      <Card style={styles.card}>
-        <Text style={styles.title}>Driver Info</Text>
-        <Text>Name: {trip.driver?.user?.fullName}</Text>
-        <Text>Vehicle: {trip.driver?.vehicle?.make} {trip.driver?.vehicle?.model}</Text>
-        <Text>Plate: {trip.driver?.vehicle?.plateNumber}</Text>
-      </Card>
-    </ScrollView>
+        {trip.deliveryOtp && (
+          <Card style={styles.card}>
+            <Text style={styles.title}>Delivery OTP</Text>
+            <Text style={styles.otp}>{trip.deliveryOtp}</Text>
+            <Text>Show this to the driver when they deliver the cargo.</Text>
+          </Card>
+        )}
+
+        <Card style={styles.card}>
+          <Text style={styles.title}>Driver Location (Realtime)</Text>
+          {driverLocation ? (
+            <Text>Lat: {driverLocation.lat.toFixed(4)}, Lng: {driverLocation.lng.toFixed(4)}</Text>
+          ) : (
+            <Text>Waiting for driver GPS...</Text>
+          )}
+        </Card>
+
+        <Card style={styles.card}>
+          <Text style={styles.title}>Driver Info</Text>
+          <Text>Name: {trip.driver?.user?.fullName}</Text>
+          <Text>Vehicle: {trip.driver?.vehicle?.make} {trip.driver?.vehicle?.model}</Text>
+          <Text>Plate: {trip.driver?.vehicle?.plateNumber}</Text>
+        </Card>
+
+        {['PENDING_DRIVER_RESPONSE', 'ACCEPTED'].includes(trip.status) && (
+          <Button 
+            title="Cancel Request" 
+            onPress={async () => {
+              try {
+                await tripApi.cancelTrip(trip.id, 'Customer canceled');
+                if (onBack) onBack();
+              } catch (e) {
+                Alert.alert('Error', 'Could not cancel trip');
+              }
+            }} 
+            variant="outline" 
+            style={{ marginTop: 24, borderColor: '#ef4444' }} 
+            textStyle={{ color: '#ef4444' }} 
+          />
+        )}
+      </ScrollView>
+    </View>
   );
 };
 
@@ -98,5 +118,6 @@ const styles = StyleSheet.create({
   statusBadge: { fontSize: 16, fontWeight: 'bold', color: '#007bff' },
   otp: { fontSize: 32, fontWeight: 'bold', letterSpacing: 5, color: 'green', marginVertical: 8 }
 });
+
 
 

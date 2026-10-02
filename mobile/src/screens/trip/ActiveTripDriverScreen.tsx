@@ -109,7 +109,9 @@ export const ActiveTripDriverScreen: React.FC<Props> = ({ tripId, onTripComplete
   if (!trip) return <View style={styles.container}><Text>Loading...</Text></View>;
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+      <Header title="Active Trip" subtitle={`ID: ${trip.id.slice(0, 8)}`} showBack={true} onBack={onBack} />
+      <ScrollView contentContainerStyle={styles.container}>
       <Card style={styles.card}>
         <Text style={styles.title}>Trip Status</Text>
         <Text style={styles.statusBadge}>{trip.status}</Text>
@@ -189,6 +191,7 @@ export const ActiveTripDriverScreen: React.FC<Props> = ({ tripId, onTripComplete
         </View>
       </Modal>
     </ScrollView>
+    </View>
   );
 };
 
@@ -265,5 +268,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
+
+
 
 
