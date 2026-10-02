@@ -60,7 +60,7 @@ export const PaymentCheckoutScreen: React.FC<Props> = ({ tripId, onPaymentSucces
     const { error } = await presentPaymentSheet();
 
     if (error) {
-      Alert.alert(Error code: , error.message);
+      Alert.alert(`Error code: ${error.code}`, error.message);
     } else {
       Alert.alert('Success', 'Your payment is confirmed!');
       onPaymentSuccess();
