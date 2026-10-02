@@ -23,6 +23,7 @@ import { TripHistoryScreen } from '../screens/trip/TripHistoryScreen';
 import { ProfileScreen } from '../screens/profile/ProfileScreen';
 import { Alert } from 'react-native';
 import { socketClient } from '../api/socket.client';
+import { tripApi } from '../api/trip.api';
 
 type ScreenState =
   | 'splash'
@@ -282,6 +283,7 @@ const getStyles = (colors: any) => StyleSheet.create({
     backgroundColor: colors.background,
   },
 });
+
 
 
 
