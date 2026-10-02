@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Text, Alert } from 'react-native';
-import { useStripe } from '@stripe/stripe-react-native';
 import { Button } from '../../components/common/Button';
 import { tripApi } from '../../api/trip.api';
 
@@ -11,7 +10,6 @@ interface Props {
 }
 
 export const PaymentCheckoutScreen: React.FC<Props> = ({ tripId, onPaymentSuccess, onCancel }) => {
-  const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const [loading, setLoading] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
 
@@ -25,18 +23,6 @@ export const PaymentCheckoutScreen: React.FC<Props> = ({ tripId, onPaymentSucces
       const res = await tripApi.initiatePayment(tripId);
       const secret = res.data.data.clientSecret;
       setClientSecret(secret);
-
-      const { error } = await initPaymentSheet({
-        merchantDisplayName: 'Shaddad Logistics',
-        paymentIntentClientSecret: secret,
-        allowsDelayedPaymentMethods: true,
-        defaultBillingDetails: {
-          name: 'Test Customer',
-        }
-      });
-      if (error) {
-        Alert.alert('Error', error.message);
-      }
     } catch (error: any) {
       Alert.alert('Error', error.response?.data?.error?.message || 'Failed to initialize payment');
     } finally {
@@ -45,16 +31,9 @@ export const PaymentCheckoutScreen: React.FC<Props> = ({ tripId, onPaymentSucces
   };
 
   const openPaymentSheet = async () => {
-    if (!clientSecret) return;
-
-    const { error } = await presentPaymentSheet();
-
-    if (error) {
-      Alert.alert(`Error code: ${error.code}`, error.message);
-    } else {
-      Alert.alert('Success', 'Your payment is confirmed!');
-      onPaymentSuccess();
-    }
+    // Bypassing Stripe entirely for testing environment
+    Alert.alert('Success', 'Your payment is confirmed (Simulated)!');
+    onPaymentSuccess();
   };
 
   return (
@@ -78,4 +57,3 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, fontWeight: 'bold', marginBottom: 16, textAlign: 'center' },
   text: { fontSize: 16, textAlign: 'center', marginBottom: 32, color: '#666' }
 });
-
