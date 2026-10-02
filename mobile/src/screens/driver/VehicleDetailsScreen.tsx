@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, Alert, TouchableOpacity, Text } from 'react-native';
 import { useTheme } from '../../theme/useTheme';
+import { useAuthStore } from '../../store/authStore';
 import { Header } from '../../components/layout/Header';
 import { Card } from '../../components/common/Card';
 import { Input } from '../../components/common/Input';
@@ -93,16 +94,18 @@ interface VehicleDetailsScreenProps {
 }
 
 export const VehicleDetailsScreen: React.FC<VehicleDetailsScreenProps> = ({ onBack }) => {const { colors } = useTheme();
+  const user = useAuthStore((state) => state.user);
+  const vehicle = user?.driverProfile?.vehicle;
   const styles = getStyles(colors);
-  const [vehicleType, setVehicleType] = useState<VehicleTypeValue>('DYNA');
-  const [make, setMake] = useState('');
-  const [model, setModel] = useState('');
-  const [year, setYear] = useState('');
-  const [licensePlate, setLicensePlate] = useState('');
-  const [color, setColor] = useState('');
-  const [maxWeightKg, setMaxWeightKg] = useState('');
-  const [maxLengthCm, setMaxLengthCm] = useState('');
-  const [isRefrigerated, setIsRefrigerated] = useState(false);
+  const [vehicleType, setVehicleType] = useState<VehicleTypeValue>((vehicle?.vehicleType as VehicleTypeValue) || 'DYNA');
+  const [make, setMake] = useState(vehicle?.make || '');
+  const [model, setModel] = useState(vehicle?.model || '');
+  const [year, setYear] = useState(vehicle?.year?.toString() || '');
+  const [licensePlate, setLicensePlate] = useState(vehicle?.plateNumber || '');
+  const [color, setColor] = useState(vehicle?.color || '');
+  const [maxWeightKg, setMaxWeightKg] = useState(vehicle?.maxWeightKg?.toString() || '');
+  const [maxLengthCm, setMaxLengthCm] = useState(vehicle?.maxLengthCm?.toString() || '');
+  const [isRefrigerated, setIsRefrigerated] = useState(vehicle?.isRefrigerated || false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -131,7 +134,7 @@ export const VehicleDetailsScreen: React.FC<VehicleDetailsScreenProps> = ({ onBa
     setError(null);
     setLoading(true);
     try {
-      await driverApi.createVehicle({
+      const payload = {
         vehicleType,
         make,
         model,
@@ -141,7 +144,27 @@ export const VehicleDetailsScreen: React.FC<VehicleDetailsScreenProps> = ({ onBa
         maxWeightKg: weightFloat,
         ...(maxLengthCm ? { maxLengthCm: parseFloat(maxLengthCm) } : {}),
         isRefrigerated,
-      });
+      };
+
+      let updatedVehicle;
+      if (vehicle?.id) {
+        const res = await driverApi.updateVehicle(payload);
+        updatedVehicle = res.data;
+      } else {
+        const res = await driverApi.createVehicle(payload as any);
+        updatedVehicle = res.data;
+      }
+
+      if (user && user.driverProfile) {
+        useAuthStore.getState().setUser({
+          ...user,
+          driverProfile: {
+            ...user.driverProfile,
+            vehicle: updatedVehicle
+          }
+        });
+      }
+
       Alert.alert('Success', 'Vehicle details saved successfully');
       onBack();
     } catch (err: unknown) {
@@ -151,6 +174,8 @@ export const VehicleDetailsScreen: React.FC<VehicleDetailsScreenProps> = ({ onBa
       setLoading(false);
     }
   };
+
+  
 
   return (
     <View style={styles.container}>
@@ -436,4 +461,7 @@ const getStyles = (colors: any) => StyleSheet.create({
     marginTop: 1,
   },
 });
+
+
+
 

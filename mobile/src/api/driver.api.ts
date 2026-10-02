@@ -53,6 +53,11 @@ export const driverApi = {
     return res.data;
   },
 
+  updateVehicle: async (vehicleData: Partial<CreateVehiclePayload>): Promise<ApiResponse<Vehicle>> => {
+    const res = await apiClient.put<ApiResponse<Vehicle>>('/drivers/vehicle', vehicleData);
+    return res.data;
+  },
+
   createVehicle: async (vehicleData: CreateVehiclePayload): Promise<ApiResponse<Vehicle>> => {
     const res = await apiClient.post<ApiResponse<Vehicle>>('/drivers/vehicle', vehicleData);
     return res.data;
@@ -97,3 +102,4 @@ export const customerDriverApi = {
     return res.data;
   },
 };
+
