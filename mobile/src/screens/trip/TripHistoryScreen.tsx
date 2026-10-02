@@ -28,7 +28,7 @@ export const TripHistoryScreen: React.FC<Props> = ({ onNavigateHome, onNavigateP
       setLoading(true);
       const res = activeRole === 'CUSTOMER' ? await tripApi.getCustomerTrips() : await tripApi.getDriverTrips();
       setTrips(res.data.data || []);
-    } catch (e) {
+    } catch (e: any) {
       console.error(e); Alert.alert('Error loading history', e.response?.data?.error?.message || e.message);
     } finally {
       setLoading(false);
@@ -91,5 +91,6 @@ const getStyles = (colors: any) => StyleSheet.create({
   address: { color: colors.text, marginBottom: 8, fontSize: 14 },
   cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 8 }, reviewsContainer: { flex: 1 }, reviewText: { fontSize: 12, color: colors.textMuted }, price: { fontWeight: '800', color: '#28a745', fontSize: 16, textAlign: 'right' },
 });
+
 
 

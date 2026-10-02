@@ -27,6 +27,10 @@
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
         "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "INTERNET",
         "ACCESS_NETWORK_STATE"
       ]
     },
@@ -47,6 +51,12 @@
         "projectId": "8344f26f-f551-4145-afdd-74d55421a8ef"
       }
     },
-    "owner": "najathnaju"
+    "owner": "najathnaju",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/8344f26f-f551-4145-afdd-74d55421a8ef"
+    }
   }
 }
